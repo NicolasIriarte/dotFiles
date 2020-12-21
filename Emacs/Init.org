@@ -53,7 +53,7 @@
 - [[#buffer-management-with-bufler][Buffer Management with Bufler]]
 - [[#window-management][Window Management]]
   - [[#frame-scaling--zooming][Frame Scaling / Zooming]]
-  - [[#window-selection-with-ace-window][Window Selection with ace-window]]
+  - [[#window-selection-with-winum][Window selection with winum]]
   - [[#window-history-with-winner-mode][Window History with winner-mode]]
   - [[#set-margins-for-modes][Set Margins for Modes]]
 - [[#expand-region][Expand Region]]
@@ -1063,16 +1063,37 @@ The keybindings for this are =C+M+-= and =C+M+==.
 
 #+end_src
 
-** Window Selection with ace-window
+** Window selection with winum
+
 #+begin_src emacs-lisp
 
-  (use-package ace-window
-    :bind (("M-o" . ace-window))
+  (use-package winum
     :config
-    (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
+
+    (setq
+     ;; Problem with EXWM on global TESTING: Try visible?
+     winum-scope 'frame-local
+     winum-mode-line-position 0
+     )
+    :init
+    (setq winum-keymap
+          (let ((map (make-sparse-keymap)))
+            (define-key map (kbd "C-x w") 'winum-select-window-by-number)
+            (define-key map (kbd "M-0") 'winum-select-window-0-or-10)
+            (define-key map (kbd "M-1") 'winum-select-window-1)
+            (define-key map (kbd "M-2") 'winum-select-window-2)
+            (define-key map (kbd "M-3") 'winum-select-window-3)
+            (define-key map (kbd "M-4") 'winum-select-window-4)
+            (define-key map (kbd "M-5") 'winum-select-window-5)
+            (define-key map (kbd "M-6") 'winum-select-window-6)
+            (define-key map (kbd "M-7") 'winum-select-window-7)
+            (define-key map (kbd "M-8") 'winum-select-window-8)
+            (define-key map (kbd "M-9") 'winum-select-window-9)
+            map))
+
+    (winum-mode t))
 
 #+end_src
-
 ** Window History with winner-mode
 
 #+begin_src emacs-lisp
