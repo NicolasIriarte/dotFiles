@@ -46,7 +46,7 @@
   - [[#commenting-lines][Commenting Lines]]
   - [[#automatically-clean-whitespace][Automatically clean whitespace]]
 - [[#configuration-files][Configuration Files]]
-  - [[#helpers][Helpers]]
+  - [[#searching][Searching]]
   - [[#bindings][Bindings]]
 - [[#better-completions-with-ivy][Better Completions with Ivy]]
 - [[#jumping-with-avy][Jumping with Avy]]
@@ -89,7 +89,6 @@
   - [[#productivity][Productivity]]
     - [[#syntax-checking-with-flycheck][Syntax checking with Flycheck]]
     - [[#snippets][Snippets]]
-    - [[#smart-parens][Smart Parens]]
     - [[#rainbow-delimiters][Rainbow Delimiters]]
     - [[#rainbow-mode][Rainbow Mode]]
   - [[#reference][Reference]]
@@ -100,7 +99,6 @@
   - [[#automatically-tangle-on-save][Automatically "Tangle" on Save]]
   - [[#fonts-and-bullets][Fonts and Bullets]]
   - [[#block-templates][Block Templates]]
-  - [[#searching][Searching]]
   - [[#bindings][Bindings]]
   - [[#end-use-package-org-mode][End use-package org-mode]]
   - [[#update-table-of-contents-on-save][Update Table of Contents on Save]]
@@ -860,29 +858,13 @@ Default to an indentation size of 2 spaces since it's the norm for pretty much e
 #+end_src
 
 * Configuration Files
-
-** Helpers
+** Searching
 
 #+begin_src emacs-lisp
 
-  (defun my/org-file-jump-to-heading (org-file heading-title)
-    (interactive)
-    (find-file (expand-file-name org-file))
-    (goto-char (point-min))
-    (search-forward (concat "* " heading-title))
-    (org-overview)
-    (org-reveal)
-    (org-show-subtree)
-    (forward-line))
-
-  (defun my/org-file-show-headings (org-file)
-    (interactive)
-    (find-file (expand-file-name org-file))
-    (counsel-org-goto)
-    (org-overview)
-    (org-reveal)
-    (org-show-subtree)
-    (forward-line))
+(defun my/search-org-files ()
+  (interactive)
+  (counsel-rg "" "~/Dropbox/Notes" nil "Search Notes: "))
 
 #+end_src
 
@@ -891,22 +873,15 @@ Default to an indentation size of 2 spaces since it's the norm for pretty much e
 #+begin_src emacs-lisp
   (use-package sudo-edit)
   (my/leader-key-def
-    "fn" '((lambda () (interactive) (counsel-find-file "~/Dropbox/Notes/")) :which-key "notes")
-    "fd"  '(:ignore t :which-key "dotfiles")
-
-    ;; "fdd" '((lambda () (interactive) (find-file "~/.dotfiles/Desktop.org")) :which-key "desktop")
-
-    "fde" '((lambda () (interactive) (find-file (expand-file-name "~/dotfiles/Emacs/Init.org"))) :which-key "edit config")
-    "fdE" '((lambda () (interactive) (my/org-file-show-headings   "~/dotfiles/Emacs/Init.org")) :which-key "edit config")
+    "fn" '((lambda () (interactive)
+             (counsel-find-file "~/Dropbox/Notes/"))
+           :which-key "notes")
+    "fN" '(my/search-org-files :wich-key "Search on Notes")
+    "fd" '((lambda () (interactive)
+              (find-file (expand-file-name "~/dotfiles/Emacs/Init.org")))
+            :which-key "edit Init.org")
 
     "fs" '(sudo-edit :wich-key "edit as root"))
-  ;; "fdm" '((lambda () (interactive) (counsel-find-file "~/.dotfiles/.config/guix/manifests/")) :which-key "manifests")
-  ;; "fds" '((lambda () (interactive) (my/org-file-jump-to-heading "~/.dotfiles/Systems.org" "Base Configuration")) :which-key "base system")
-  ;; "fdS" '((lambda () (interactive) (my/org-file-jump-to-heading "~/.dotfiles/Systems.org" system-name)) :which-key "this system")
-  ;; "fdp" '((lambda () (interactive) (my/org-file-jump-to-heading "~/.dotfiles/Desktop.org" "Panel via Polybar")) :which-key "polybar")
-  ;; "fdw" '((lambda () (interactive) (find-file (expand-file-name "~/.dotfiles/Workflow.org"))) :which-key "workflow")
-  ;; "fdv" '((lambda () (interactive) (find-file "~/.dotfiles/.config/vimb/config")) :which-key "vimb")
-
 
 #+end_src
 
@@ -1247,8 +1222,7 @@ I use [[https://www.passwordstore.org/][pass]] to manage all of my passwords loc
     "do"  `(,(my/dired-link "~/Downloads") :which-key "Downloads")
     "dp"  `(,(my/dired-link "~/Pictures") :which-key "Pictures")
     "dv"  `(,(my/dired-link "~/Videos") :which-key "Videos")
-    "d."  `(,(my/dired-link "~/dotfiles") :which-key "dotfiles")
-    "de"  `(,(my/dired-link "~/.emacs.d") :which-key ".emacs.d"))
+    "d."  `(,(my/dired-link "~/dotfiles") :which-key "dotfiles"))
 
 #+end_src
 
@@ -1520,15 +1494,16 @@ Here are packages that are useful across different Lisp and Scheme implementatio
 
 #+begin_src emacs-lisp
 
-(use-package lispy
-  :hook ((emacs-lisp-mode . lispy-mode)
-         (scheme-mode . lispy-mode)))
+  (use-package lispy
+    :disabled
+    :hook ((emacs-lisp-mode . lispy-mode)
+           (scheme-mode . lispy-mode)))
 
-(use-package lispyville
-  :disabled
-  :hook ((lispy-mode . lispyville-mode))
-  :config
-  (lispyville-set-key-theme '(operators c-w additional)))
+  (use-package lispyville
+    :disabled
+    :hook ((lispy-mode . lispyville-mode))
+    :config
+    (lispyville-set-key-theme '(operators c-w additional)))
 
 #+end_src
 
@@ -1775,15 +1750,6 @@ Configure TypeScript and JavaScript language modes
 
 #+end_src
 
-*** Smart Parens
-
-#+begin_src emacs-lisp
-
-  (use-package smartparens
-    :hook (prog-mode . smartparens-mode))
-
-#+end_src
-
 *** Rainbow Delimiters
 
 #+begin_src emacs-lisp
@@ -1983,16 +1949,6 @@ documentation page.
   (add-to-list 'org-structure-template-alist '("c++" . "src c++"))
 #+end_src
 
-** Searching
-
-#+begin_src emacs-lisp
-
-(defun my/search-org-files ()
-  (interactive)
-  (counsel-rg "" "~/Notes" nil "Search Notes: "))
-
-#+end_src
-
 ** TODO Bindings
 
 #+begin_src emacs-lisp
@@ -2013,8 +1969,6 @@ documentation page.
   "oil" '(org-insert-link :which-key "insert link")
 
   "on"  '(org-toggle-narrow-to-subtree :which-key "toggle narrow")
-
-  ;; "os"  '(my/counsel-rg-org-files :which-key "search notes")
 
   "oa"  '(org-agenda :which-key "status")
   "oc"  '(org-capture t :which-key "capture")
