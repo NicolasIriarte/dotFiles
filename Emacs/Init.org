@@ -133,21 +133,28 @@ I don't want a bunch of transient files showing up as untracked in the Git repo 
 
 #+begin_src emacs-lisp
 
-;; Keep transient cruft out of ~/.emacs.d/
-(setq user-emacs-directory "~/.cache/emacs/"
-	    backup-directory-alist `(("." . ,(expand-file-name "backups" user-emacs-directory)))
-			url-history-file (expand-file-name "url/history" user-emacs-directory)
-	    auto-save-list-file-prefix (expand-file-name "auto-save-list/.saves-" user-emacs-directory)
-	    projectile-known-projects-file (expand-file-name "projectile-bookmarks.eld" user-emacs-directory)
-	    package-user-dir (expand-file-name "elpa" user-emacs-directory)
-	    )
+  ;; Keep transient cruft out of ~/.emacs.d/
+  (setq user-emacs-directory "~/.cache/emacs/"
+        backup-directory-alist `(("." . ,(expand-file-name "backups" user-emacs-directory)))
+        url-history-file (expand-file-name "url/history" user-emacs-directory)
+        auto-save-list-file-prefix (expand-file-name "auto-save-list/.saves-" user-emacs-directory)
+        projectile-known-projects-file (expand-file-name "projectile-bookmarks.eld" user-emacs-directory)
+        package-user-dir (expand-file-name "elpa" user-emacs-directory)
+        )
 
-;; Keep customization settings in a temporary file (thanks Ambrevar!)
-(setq custom-file
-      (if (boundp 'server-socket-dir)
-          (expand-file-name "custom.el" server-socket-dir)
-        (expand-file-name (format "emacs-custom-%s.el" (user-uid)) temporary-file-directory)))
-(load custom-file t)
+  ;; Disable recentf at startup and enable-it at the end
+  ;; so we don't cache files on the startup
+  (recentf-mode nil)
+  (add-hook 'after-init-hook 'recentf-mode)
+  ;; Upload recentf every 5 minutes
+  (run-at-time nil (* 5 60) 'recentf-save-list)
+
+  ;; Keep customization settings in a temporary file (thanks Ambrevar!)
+  (setq custom-file
+        (if (boundp 'server-socket-dir)
+            (expand-file-name "custom.el" server-socket-dir)
+          (expand-file-name (format "emacs-custom-%s.el" (user-uid)) temporary-file-directory)))
+  (load custom-file t)
 
 #+end_src
 
@@ -204,7 +211,8 @@ routed here.
 
 #+begin_src emacs-lisp
 
-;; (server-start)
+  (load "server")
+  (unless (server-running-p) (server-start))
 
 #+end_src
 
@@ -451,8 +459,10 @@ Clean up Emacs' user interface, make it more minimal.
   (menu-bar-mode -1)   ; Disable the menu bar
 
   ;; Set up the visible bell
-  (setq visible-bell t)
-
+  (setq-default visible-bell t
+        ;; With this always split vertically by default
+        split-height-threshold nil
+        split-width-threshold 0)
 #+end_src
 
 Improve scrolling.
@@ -530,7 +540,6 @@ A nice gallery of Emacs themes can be found at https://emacsthemes.com/.
   (use-package spacegray-theme :defer t)
   (use-package doom-themes :defer t)
   (use-package spacemacs-theme :defer t)
-
   ;; (load-theme 'doom-palenight t)
   (use-package heaven-and-hell
     :config
@@ -949,10 +958,6 @@ projects super quickly.  Here are some workflow notes on how to best use Ivy:
       (setf (alist-get 'swiper ivy-height-alist) 15)
       (setf (alist-get 'counsel-switch-buffer ivy-height-alist) 7))
 
-    (use-package ivy-hydra
-      :defer t
-      :after hydra)
-
   (use-package ivy-rich
     :init
     (ivy-rich-mode 1)
@@ -973,12 +978,10 @@ projects super quickly.  Here are some workflow notes on how to best use Ivy:
       (setq ivy-initial-inputs-alist nil)) ;; Don't start searches with ^
 
     (use-package flx  ;; Improves sorting for fuzzy-matched results
-      :defer t
       :init
       (setq ivy-flx-limit 10000))
 
     (use-package smex ;; Adds M-x recent command sorting for counsel-M-x
-      :defer 1
       :after counsel)
 
     (use-package wgrep)
@@ -1191,7 +1194,7 @@ I use [[https://www.passwordstore.org/][pass]] to manage all of my passwords loc
       (hl-line-mode 1)))
 
     (use-package dired-rainbow
-      :defer 2
+      :after dired
       :config
       (dired-rainbow-define-chmod directory "#6cb2eb" "d.*")
       (dired-rainbow-define html "#eb5286" ("css" "less" "sass" "scss" "htm" "html" "jhtm" "mht" "eml" "mustache" "xhtml"))
@@ -2366,6 +2369,7 @@ It's nice to have a table of contents section for long literate configuration fi
 #+begin_src emacs-lisp
 
   (use-package pulseaudio-control
+    :disabled
     :commands pulseaudio-control-select-sink-by-name
     :config
     (setq pulseaudio-control-pactl-path "/usr/bin/pactl"))
