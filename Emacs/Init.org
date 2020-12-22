@@ -14,9 +14,6 @@
 - [[#desktop-environment][Desktop Environment]]
 - [[#startup-performance][Startup Performance]]
 - [[#keyboard-bindings][Keyboard Bindings]]
-  - [[#esc-cancels-all][ESC Cancels All]]
-  - [[#rebind-c-u][Rebind C-u]]
-  - [[#lets-be-evil][Let's Be Evil]]
   - [[#keybinding-panel-which-key][Keybinding Panel (which-key)]]
   - [[#simplify-leader-bindings-generalel][Simplify Leader Bindings (general.el)]]
   - [[#enable-keychord-bind-with-use-package][Enable keychord bind with use-package]]
@@ -43,7 +40,6 @@
 - [[#editing-configuration][Editing Configuration]]
   - [[#tab-widths][Tab Widths]]
   - [[#use-spaces-instead-of-tabs-for-indentation][Use spaces instead of tabs for indentation]]
-  - [[#commenting-lines][Commenting Lines]]
   - [[#automatically-clean-whitespace][Automatically clean whitespace]]
 - [[#configuration-files][Configuration Files]]
   - [[#searching][Searching]]
@@ -310,90 +306,6 @@ Enables volume and bringhtness key, and others
   #+end_src
 
 * Keyboard Bindings
-** ESC Cancels All
-
-#+begin_src emacs-lisp
-
-  (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
-
-#+end_src
-
-** Rebind C-u
-
-Since I let =evil-mode= take over =C-u= for buffer scrolling, I need to re-bind the =universal-argument= command to another key sequence.  I'm choosing =C-M-u= for this purpose.
-
-#+begin_src emacs-lisp
-
-;; (global-set-key (kbd "C-M-u") 'universal-argument)
-
-#+end_src
-
-** Let's Be Evil
-
-Some tips can be found here:
-
-- https://github.com/noctuid/evil-guide
-- https://nathantypanski.com/blog/2014-08-03-a-vim-like-emacs-config.html
-
-#+begin_src emacs-lisp
-
-  ;; (defun my/evil-hook ()
-  ;;   (dolist (mode '(custom-mode
-	;; 	    eshell-mode
-	;; 	    git-rebase-mode
-	;; 	    erc-mode
-	;; 	    circe-server-mode
-	;; 	    circe-chat-mode
-	;; 	    circe-query-mode
-	;; 	    sauron-mode
-	;; 	    term-mode))
-  ;;     (add-to-list 'evil-emacs-state-modes mode)))
-
-  ;; (defun my/dont-arrow-me ()
-  ;;   (interactive)
-  ;;   (message "Arrow keys are bad, you know?"))
-
-  ;; (use-package evil
-  ;;   :after which-key ;; Loading evil after which-key get better integration
-  ;;   :init
-  ;;   (setq evil-want-integration t
-	;;   evil-want-keybinding nil
-	;;   evil-want-C-u-scroll t
-	;;   evil-want-C-i-jump nil
-	;;   evil-respect-visual-line-mode t)
-  ;;   :config
-  ;;   (add-hook 'evil-mode-hook 'my/evil-hook)
-  ;;   (evil-mode 1)
-  ;;   (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
-  ;;   (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
-
-  ;;   ;; Use visual line motions even outside of visual-line-mode buffers
-  ;;   (evil-global-set-key 'motion "j" 'evil-next-visual-line)
-  ;;   (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
-
-
-  ;;   ;; Disable arrow keys in normal and visual modes
-  ;;   (define-key evil-normal-state-map (kbd "<left>") 'my/dont-arrow-me)
-  ;;   (define-key evil-normal-state-map (kbd "<right>") 'my/dont-arrow-me)
-  ;;   (define-key evil-normal-state-map (kbd "<down>") 'my/dont-arrow-me)
-  ;;   (define-key evil-normal-state-map (kbd "<up>") 'my/dont-arrow-me)
-  ;;   (evil-global-set-key 'motion (kbd "<left>") 'my/dont-arrow-me)
-  ;;   (evil-global-set-key 'motion (kbd "<right>") 'my/dont-arrow-me)
-  ;;   (evil-global-set-key 'motion (kbd "<down>") 'my/dont-arrow-me)
-  ;;   (evil-global-set-key 'motion (kbd "<up>") 'my/dont-arrow-me)
-
-  ;;   (evil-set-initial-state 'messages-buffer-mode 'normal)
-  ;;   (evil-set-initial-state 'dashboard-mode 'normal))
-
-  ;; (use-package evil-collection
-  ;;   :after evil
-  ;;   :custom
-  ;;   (evil-collection-outline-bind-tab-p nil)
-  ;;   :config
-  ;;   (evil-collection-init))
-
-#+end_src
-
 ** Keybinding Panel (which-key)
 
 [[https://github.com/justbur/emacs-which-key][which-key]] is great for getting an overview of what keybindings are available
@@ -411,8 +323,7 @@ based on the prefix keys you entered.  Learned about this one from Spacemacs.
 
 ** Simplify Leader Bindings (general.el)
 
-[[https://github.com/noctuid/general.el][general.el]] is a fantastic library for defining prefixed keybindings, especially
-in conjunction with Evil modes.
+[[https://github.com/noctuid/general.el][general.el]] is a fantastic library for defining prefixed keybindings.
 
 #+begin_src emacs-lisp
 
@@ -658,7 +569,6 @@ anymore if I set up =diminish= correctly.
 	,(when my/exwm-enabled
 	    '(:eval (format "[%d] " exwm-workspace-current-index)))
 	mode-line-front-space
-	;; evil-mode-line-tag
 	mode-line-mule-info
 	mode-line-client
 	mode-line-modified
@@ -825,7 +735,6 @@ Default to an indentation size of 2 spaces since it's the norm for pretty much e
 #+begin_src emacs-lisp
 
 (setq-default tab-width 2)
-;; (setq-default evil-shift-width tab-width)
 
 #+end_src
 
@@ -834,15 +743,6 @@ Default to an indentation size of 2 spaces since it's the norm for pretty much e
 #+begin_src emacs-lisp
 
   (setq-default indent-tabs-mode nil)
-
-#+end_src
-
-** Commenting Lines
-
-#+begin_src emacs-lisp
-
-  ;; (use-package evil-nerd-commenter
-  ;;   :bind ("M-/" . evilnc-comment-or-uncomment-lines))
 
 #+end_src
 
@@ -1010,11 +910,6 @@ I'm trying to figure out how to integrate Bufler with Ivy more effectively (buff
     :bind (("C-M-j" . bufler-switch-buffer)
 	   ("C-M-k" . bufler-workspace-frame-set))
     :config
-    ;; (evil-collection-define-key 'normal 'bufler-list-mode-map
-      ;; (kbd "RET")   'bufler-list-buffer-switch
-      ;; (kbd "M-RET") 'bufler-list-buffer-peek
-      ;; "D"           'bufler-list-buffer-kill)
-
     (setf bufler-groups
 	  (bufler-defgroups
 	   ;; Subgroup collecting all named workspaces.
@@ -1098,7 +993,6 @@ The keybindings for this are =C+M+-= and =C+M+==.
 #+begin_src emacs-lisp
 
   (winner-mode)
-  ;; (define-key evil-window-map "u" 'winner-undo)
 
 #+end_src
 
@@ -1220,16 +1114,7 @@ I use [[https://www.passwordstore.org/][pass]] to manage all of my passwords loc
       :defer t)
 
     (use-package dired-collapse
-      :defer t)
-
-    ;; (evil-collection-define-key 'normal 'dired-mode-map
-    ;;   "h" 'dired-single-up-directory
-    ;;   "H" 'dired-omit-mode
-    ;;   "l" 'dired-single-buffer
-    ;;   "y" 'dired-ranger-copy
-    ;;   "X" 'dired-ranger-move
-    ;;   "p" 'dired-ranger-paste)
-)
+      :defer t))
 
   (defun my/dired-link (path)
     (lexical-let ((target path))
@@ -1534,10 +1419,7 @@ Here are packages that are useful across different Lisp and Scheme implementatio
 
   (use-package cider
     :disabled
-    :mode "\\.clj[sc]?\\'"
-    ;; :config
-    ;; (evil-collection-cider-setup)
-  )
+    :mode "\\.clj[sc]?\\'")
 
 #+end_src
 
@@ -1591,7 +1473,6 @@ Configure TypeScript and JavaScript language modes
 
   (defun my/set-js-indentation ()
     (setq js-indent-level 2)
-    ;; (setq evil-shift-width js-indent-level)
     (setq-default tab-width 2))
 
   (use-package js2-mode
@@ -1823,7 +1704,6 @@ Set up Org Mode with a baseline configuration.  The following sections will add 
   ;; (variable-pitch-mode 1)
   (auto-fill-mode 0)
   (visual-line-mode 1)
-  ;; (setq evil-auto-indent nil)
   (diminish org-indent-mode))
 
 (use-package org
@@ -1851,12 +1731,6 @@ Set up Org Mode with a baseline configuration.  The following sections will add 
                             (org-agenda-files :maxlevel . 3)))
   (setq org-outline-path-complete-in-steps nil)
   (setq org-refile-use-outline-path t)
-
-  ;; (evil-define-key '(normal insert visual) org-mode-map (kbd "C-j") 'org-next-visible-heading)
-  ;; (evil-define-key '(normal insert visual) org-mode-map (kbd "C-k") 'org-previous-visible-heading)
-
-  ;; (evil-define-key '(normal insert visual) org-mode-map (kbd "M-j") 'org-metadown)
-  ;; (evil-define-key '(normal insert visual) org-mode-map (kbd "M-k") 'org-metaup)
 
   (org-babel-do-load-languages
     'org-babel-load-languages
@@ -1975,15 +1849,6 @@ documentation page.
 
 #+begin_src emacs-lisp
 
-;; (use-package evil-org
-;;   :after org
-;;   :hook ((org-mode . evil-org-mode)
-;;          (org-agenda-mode . evil-org-mode)
-;;          (evil-org-mode . (lambda () (evil-org-set-key-theme '(navigation todo insert textobjects additional)))))
-;;   :config
-;;   (require 'evil-org-agenda)
-;;   (evil-org-agenda-set-keys))
-
 (my/leader-key-def
   "o"   '(:ignore t :which-key "org mode")
 
@@ -2054,10 +1919,6 @@ It's nice to have a table of contents section for long literate configuration fi
   :after org
   :commands org-tree-slide-mode
   :config
-  ;; (evil-define-key 'normal org-tree-slide-mode-map
-  ;;   (kbd "q") 'dw/org-end-presentation
-  ;;   (kbd "C-j") 'org-tree-slide-move-next-tree
-  ;;   (kbd "C-k") 'org-tree-slide-move-previous-tree)
   (setq org-tree-slide-slide-in-effect nil
         org-tree-slide-activate-message "Presentation started."
         org-tree-slide-deactivate-message "Presentation ended."
@@ -2166,8 +2027,6 @@ It's nice to have a table of contents section for long literate configuration fi
        (propertize " " 'face `(:foreground "white")))))
 
   (defun my/eshell-configure ()
-    ;; (require 'evil-collection-eshell)
-    ;; (evil-collection-eshell-setup)
 
     (use-package xterm-color)
 
@@ -2195,10 +2054,6 @@ It's nice to have a table of contents section for long literate configuration fi
 
     ;; Use Ivy to provide completions in eshell
     (define-key eshell-mode-map (kbd "<tab>") 'completion-at-point)
-
-    ;; (evil-define-key '(normal insert visual) eshell-mode-map (kbd "C-r") 'counsel-esh-history)
-    ;; (evil-define-key '(normal insert visual) eshell-mode-map (kbd "<home>") 'eshell-bol)
-    ;; (evil-normalize-keymaps)
 
     (setenv "PAGER" "cat")
 
