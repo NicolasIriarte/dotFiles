@@ -324,7 +324,7 @@ Since I let =evil-mode= take over =C-u= for buffer scrolling, I need to re-bind 
 
 #+begin_src emacs-lisp
 
-(global-set-key (kbd "C-M-u") 'universal-argument)
+;; (global-set-key (kbd "C-M-u") 'universal-argument)
 
 #+end_src
 
@@ -337,60 +337,60 @@ Some tips can be found here:
 
 #+begin_src emacs-lisp
 
-  (defun my/evil-hook ()
-    (dolist (mode '(custom-mode
-		    eshell-mode
-		    git-rebase-mode
-		    erc-mode
-		    circe-server-mode
-		    circe-chat-mode
-		    circe-query-mode
-		    sauron-mode
-		    term-mode))
-      (add-to-list 'evil-emacs-state-modes mode)))
+  ;; (defun my/evil-hook ()
+  ;;   (dolist (mode '(custom-mode
+	;; 	    eshell-mode
+	;; 	    git-rebase-mode
+	;; 	    erc-mode
+	;; 	    circe-server-mode
+	;; 	    circe-chat-mode
+	;; 	    circe-query-mode
+	;; 	    sauron-mode
+	;; 	    term-mode))
+  ;;     (add-to-list 'evil-emacs-state-modes mode)))
 
-  (defun my/dont-arrow-me ()
-    (interactive)
-    (message "Arrow keys are bad, you know?"))
+  ;; (defun my/dont-arrow-me ()
+  ;;   (interactive)
+  ;;   (message "Arrow keys are bad, you know?"))
 
-  (use-package evil
-    :after which-key ;; Loading evil after which-key get better integration
-    :init
-    (setq evil-want-integration t
-	  evil-want-keybinding nil
-	  evil-want-C-u-scroll t
-	  evil-want-C-i-jump nil
-	  evil-respect-visual-line-mode t)
-    :config
-    (add-hook 'evil-mode-hook 'my/evil-hook)
-    (evil-mode 1)
-    (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
-    (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
+  ;; (use-package evil
+  ;;   :after which-key ;; Loading evil after which-key get better integration
+  ;;   :init
+  ;;   (setq evil-want-integration t
+	;;   evil-want-keybinding nil
+	;;   evil-want-C-u-scroll t
+	;;   evil-want-C-i-jump nil
+	;;   evil-respect-visual-line-mode t)
+  ;;   :config
+  ;;   (add-hook 'evil-mode-hook 'my/evil-hook)
+  ;;   (evil-mode 1)
+  ;;   (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
+  ;;   (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
 
-    ;; Use visual line motions even outside of visual-line-mode buffers
-    (evil-global-set-key 'motion "j" 'evil-next-visual-line)
-    (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+  ;;   ;; Use visual line motions even outside of visual-line-mode buffers
+  ;;   (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+  ;;   (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
 
 
-    ;; Disable arrow keys in normal and visual modes
-    (define-key evil-normal-state-map (kbd "<left>") 'my/dont-arrow-me)
-    (define-key evil-normal-state-map (kbd "<right>") 'my/dont-arrow-me)
-    (define-key evil-normal-state-map (kbd "<down>") 'my/dont-arrow-me)
-    (define-key evil-normal-state-map (kbd "<up>") 'my/dont-arrow-me)
-    (evil-global-set-key 'motion (kbd "<left>") 'my/dont-arrow-me)
-    (evil-global-set-key 'motion (kbd "<right>") 'my/dont-arrow-me)
-    (evil-global-set-key 'motion (kbd "<down>") 'my/dont-arrow-me)
-    (evil-global-set-key 'motion (kbd "<up>") 'my/dont-arrow-me)
+  ;;   ;; Disable arrow keys in normal and visual modes
+  ;;   (define-key evil-normal-state-map (kbd "<left>") 'my/dont-arrow-me)
+  ;;   (define-key evil-normal-state-map (kbd "<right>") 'my/dont-arrow-me)
+  ;;   (define-key evil-normal-state-map (kbd "<down>") 'my/dont-arrow-me)
+  ;;   (define-key evil-normal-state-map (kbd "<up>") 'my/dont-arrow-me)
+  ;;   (evil-global-set-key 'motion (kbd "<left>") 'my/dont-arrow-me)
+  ;;   (evil-global-set-key 'motion (kbd "<right>") 'my/dont-arrow-me)
+  ;;   (evil-global-set-key 'motion (kbd "<down>") 'my/dont-arrow-me)
+  ;;   (evil-global-set-key 'motion (kbd "<up>") 'my/dont-arrow-me)
 
-    (evil-set-initial-state 'messages-buffer-mode 'normal)
-    (evil-set-initial-state 'dashboard-mode 'normal))
+  ;;   (evil-set-initial-state 'messages-buffer-mode 'normal)
+  ;;   (evil-set-initial-state 'dashboard-mode 'normal))
 
-  (use-package evil-collection
-    :after evil
-    :custom
-    (evil-collection-outline-bind-tab-p nil)
-    :config
-    (evil-collection-init))
+  ;; (use-package evil-collection
+  ;;   :after evil
+  ;;   :custom
+  ;;   (evil-collection-outline-bind-tab-p nil)
+  ;;   :config
+  ;;   (evil-collection-init))
 
 #+end_src
 
@@ -418,15 +418,14 @@ in conjunction with Evil modes.
 
   (use-package general
     :config
-    (general-evil-setup t)
+
+    (general-unbind
+      "C-z")
 
     (general-create-definer my/leader-key-def
-      :keymaps '(normal insert visual emacs)
-      :prefix "SPC"
-      :global-prefix "C-SPC")
-
-    (general-create-definer my/ctrl-c-keys
-      :prefix "C-c"))
+      :prefix "C-z"
+      )
+    )
 
 #+end_src
 
@@ -659,7 +658,7 @@ anymore if I set up =diminish= correctly.
 	,(when my/exwm-enabled
 	    '(:eval (format "[%d] " exwm-workspace-current-index)))
 	mode-line-front-space
-	evil-mode-line-tag
+	;; evil-mode-line-tag
 	mode-line-mule-info
 	mode-line-client
 	mode-line-modified
@@ -826,7 +825,7 @@ Default to an indentation size of 2 spaces since it's the norm for pretty much e
 #+begin_src emacs-lisp
 
 (setq-default tab-width 2)
-(setq-default evil-shift-width tab-width)
+;; (setq-default evil-shift-width tab-width)
 
 #+end_src
 
@@ -842,8 +841,8 @@ Default to an indentation size of 2 spaces since it's the norm for pretty much e
 
 #+begin_src emacs-lisp
 
-  (use-package evil-nerd-commenter
-    :bind ("M-/" . evilnc-comment-or-uncomment-lines))
+  ;; (use-package evil-nerd-commenter
+  ;;   :bind ("M-/" . evilnc-comment-or-uncomment-lines))
 
 #+end_src
 
@@ -1011,10 +1010,10 @@ I'm trying to figure out how to integrate Bufler with Ivy more effectively (buff
     :bind (("C-M-j" . bufler-switch-buffer)
 	   ("C-M-k" . bufler-workspace-frame-set))
     :config
-    (evil-collection-define-key 'normal 'bufler-list-mode-map
-      (kbd "RET")   'bufler-list-buffer-switch
-      (kbd "M-RET") 'bufler-list-buffer-peek
-      "D"           'bufler-list-buffer-kill)
+    ;; (evil-collection-define-key 'normal 'bufler-list-mode-map
+      ;; (kbd "RET")   'bufler-list-buffer-switch
+      ;; (kbd "M-RET") 'bufler-list-buffer-peek
+      ;; "D"           'bufler-list-buffer-kill)
 
     (setf bufler-groups
 	  (bufler-defgroups
@@ -1099,7 +1098,7 @@ The keybindings for this are =C+M+-= and =C+M+==.
 #+begin_src emacs-lisp
 
   (winner-mode)
-  (define-key evil-window-map "u" 'winner-undo)
+  ;; (define-key evil-window-map "u" 'winner-undo)
 
 #+end_src
 
@@ -1223,13 +1222,14 @@ I use [[https://www.passwordstore.org/][pass]] to manage all of my passwords loc
     (use-package dired-collapse
       :defer t)
 
-    (evil-collection-define-key 'normal 'dired-mode-map
-      "h" 'dired-single-up-directory
-      "H" 'dired-omit-mode
-      "l" 'dired-single-buffer
-      "y" 'dired-ranger-copy
-      "X" 'dired-ranger-move
-      "p" 'dired-ranger-paste))
+    ;; (evil-collection-define-key 'normal 'dired-mode-map
+    ;;   "h" 'dired-single-up-directory
+    ;;   "H" 'dired-omit-mode
+    ;;   "l" 'dired-single-buffer
+    ;;   "y" 'dired-ranger-copy
+    ;;   "X" 'dired-ranger-move
+    ;;   "p" 'dired-ranger-paste)
+)
 
   (defun my/dired-link (path)
     (lexical-let ((target path))
@@ -1535,8 +1535,9 @@ Here are packages that are useful across different Lisp and Scheme implementatio
   (use-package cider
     :disabled
     :mode "\\.clj[sc]?\\'"
-    :config
-    (evil-collection-cider-setup))
+    ;; :config
+    ;; (evil-collection-cider-setup)
+  )
 
 #+end_src
 
@@ -1590,7 +1591,7 @@ Configure TypeScript and JavaScript language modes
 
   (defun my/set-js-indentation ()
     (setq js-indent-level 2)
-    (setq evil-shift-width js-indent-level)
+    ;; (setq evil-shift-width js-indent-level)
     (setq-default tab-width 2))
 
   (use-package js2-mode
@@ -1822,7 +1823,7 @@ Set up Org Mode with a baseline configuration.  The following sections will add 
   ;; (variable-pitch-mode 1)
   (auto-fill-mode 0)
   (visual-line-mode 1)
-  (setq evil-auto-indent nil)
+  ;; (setq evil-auto-indent nil)
   (diminish org-indent-mode))
 
 (use-package org
@@ -1851,11 +1852,11 @@ Set up Org Mode with a baseline configuration.  The following sections will add 
   (setq org-outline-path-complete-in-steps nil)
   (setq org-refile-use-outline-path t)
 
-  (evil-define-key '(normal insert visual) org-mode-map (kbd "C-j") 'org-next-visible-heading)
-  (evil-define-key '(normal insert visual) org-mode-map (kbd "C-k") 'org-previous-visible-heading)
+  ;; (evil-define-key '(normal insert visual) org-mode-map (kbd "C-j") 'org-next-visible-heading)
+  ;; (evil-define-key '(normal insert visual) org-mode-map (kbd "C-k") 'org-previous-visible-heading)
 
-  (evil-define-key '(normal insert visual) org-mode-map (kbd "M-j") 'org-metadown)
-  (evil-define-key '(normal insert visual) org-mode-map (kbd "M-k") 'org-metaup)
+  ;; (evil-define-key '(normal insert visual) org-mode-map (kbd "M-j") 'org-metadown)
+  ;; (evil-define-key '(normal insert visual) org-mode-map (kbd "M-k") 'org-metaup)
 
   (org-babel-do-load-languages
     'org-babel-load-languages
@@ -1974,14 +1975,14 @@ documentation page.
 
 #+begin_src emacs-lisp
 
-(use-package evil-org
-  :after org
-  :hook ((org-mode . evil-org-mode)
-         (org-agenda-mode . evil-org-mode)
-         (evil-org-mode . (lambda () (evil-org-set-key-theme '(navigation todo insert textobjects additional)))))
-  :config
-  (require 'evil-org-agenda)
-  (evil-org-agenda-set-keys))
+;; (use-package evil-org
+;;   :after org
+;;   :hook ((org-mode . evil-org-mode)
+;;          (org-agenda-mode . evil-org-mode)
+;;          (evil-org-mode . (lambda () (evil-org-set-key-theme '(navigation todo insert textobjects additional)))))
+;;   :config
+;;   (require 'evil-org-agenda)
+;;   (evil-org-agenda-set-keys))
 
 (my/leader-key-def
   "o"   '(:ignore t :which-key "org mode")
@@ -2053,10 +2054,10 @@ It's nice to have a table of contents section for long literate configuration fi
   :after org
   :commands org-tree-slide-mode
   :config
-  (evil-define-key 'normal org-tree-slide-mode-map
-    (kbd "q") 'dw/org-end-presentation
-    (kbd "C-j") 'org-tree-slide-move-next-tree
-    (kbd "C-k") 'org-tree-slide-move-previous-tree)
+  ;; (evil-define-key 'normal org-tree-slide-mode-map
+  ;;   (kbd "q") 'dw/org-end-presentation
+  ;;   (kbd "C-j") 'org-tree-slide-move-next-tree
+  ;;   (kbd "C-k") 'org-tree-slide-move-previous-tree)
   (setq org-tree-slide-slide-in-effect nil
         org-tree-slide-activate-message "Presentation started."
         org-tree-slide-deactivate-message "Presentation ended."
@@ -2165,8 +2166,8 @@ It's nice to have a table of contents section for long literate configuration fi
        (propertize " " 'face `(:foreground "white")))))
 
   (defun my/eshell-configure ()
-    (require 'evil-collection-eshell)
-    (evil-collection-eshell-setup)
+    ;; (require 'evil-collection-eshell)
+    ;; (evil-collection-eshell-setup)
 
     (use-package xterm-color)
 
@@ -2195,9 +2196,9 @@ It's nice to have a table of contents section for long literate configuration fi
     ;; Use Ivy to provide completions in eshell
     (define-key eshell-mode-map (kbd "<tab>") 'completion-at-point)
 
-    (evil-define-key '(normal insert visual) eshell-mode-map (kbd "C-r") 'counsel-esh-history)
-    (evil-define-key '(normal insert visual) eshell-mode-map (kbd "<home>") 'eshell-bol)
-    (evil-normalize-keymaps)
+    ;; (evil-define-key '(normal insert visual) eshell-mode-map (kbd "C-r") 'counsel-esh-history)
+    ;; (evil-define-key '(normal insert visual) eshell-mode-map (kbd "<home>") 'eshell-bol)
+    ;; (evil-normalize-keymaps)
 
     (setenv "PAGER" "cat")
 
