@@ -1,0 +1,190 @@
+#+TITLE: Text editing
+#+PROPERTY: header-args:emacs-lisp :tangle ~/.emacs.d/elisp/in-editing.el
+
+This file contains the description and configuration of the productivity workflow I use with Org Mode.
+
+* Table of Contents
+:PROPERTIES:
+:TOC:      :include all :ignore this
+:END:
+:CONTENTS:
+- [[#newlines][Newlines]]
+- [[#text-deletion][Text deletion]]
+- [[#buffers][Buffers]]
+- [[#lambda-macro][Lambda macro]]
+- [[#module-setup][Module Setup]]
+:END:
+
+* Newlines
+#+begin_src emacs-lisp
+
+(defun open-line-below ()
+  "Open a new line below and move to it."
+  (interactive)
+  (end-of-line)
+  (newline)
+  (indent-for-tab-command))
+
+(defun open-line-above ()
+  "Open a new line above and move to it."
+  (interactive)
+  (beginning-of-line)
+  (newline)
+  (forward-line -1)
+  (indent-for-tab-command))
+
+#+end_src
+
+* Text deletion
+
+Delete (not kill) words and lines.
+
+#+begin_src emacs-lisp
+
+(defun delete-word (arg)
+  "Delete characters forward until encountering the end of a word.
+With argument, do this that many times."
+  (interactive "p")
+  (if (use-region-p)
+      (delete-region (region-beginning) (region-end))
+    (delete-region (point) (progn (forward-word arg) (point)))))
+
+(defun backward-delete-word (arg)
+  "Delete characters backward until encountering the end of a word.
+With argument, do this that many times."
+  (interactive "p")
+  (delete-word (- arg)))
+
+(defun delete-line ()
+  "Delete (not kill) the current line."
+  (interactive)
+  (save-excursion
+    (delete-region
+     (progn (forward-visible-line 0) (point))
+     (progn (forward-visible-line 1) (point)))))
+
+(defun delete-to-end-of-line (arg)
+  "Delete characters forward until encountering the end of a word.
+With argument, do this that many times."
+  (interactive "p")
+  (if (use-region-p)
+      (delete-region (region-beginning) (region-end))
+    (delete-region (point) (progn (move-end-of-line arg) (point)))))
+
+(defun backward-delete-to-end-of-line (arg)
+  "Delete characters backward until encountering the end of a word.
+With argument, do this that many times."
+  (interactive "p")
+  (if (use-region-p)
+      (delete-region (region-beginning) (region-end))
+    (delete-region (point) (progn (move-beginning-of-line arg) (point)))))
+
+#+end_src
+
+* Buffers
+
+#+begin_src emacs-lisp
+    ;; Kill and close buffer
+    (defun kill-and-close ()
+      "Kill current buffer and close it."
+      (interactive)
+      (kill-this-buffer)
+      (delete-window))
+
+    (defun switch-to-previous-buffer ()
+      "Switch to previously open buffer.
+        Repeated invocations toggle between the two most recently open buffers."
+      (interactive)
+      (switch-to-buffer (other-buffer (current-buffer) 1)))
+
+    (defun rename-current-buffer-file ()
+      "Renames current buffer and file it is visiting."
+      (interactive)
+      (let ((name (buffer-name))
+            (filename (buffer-file-name)))
+        (if (not (and filename (file-exists-p filename)))
+            (error "Buffer '%s' is not visiting a file!" name)
+          (let ((new-name (read-file-name "New name: " filename)))
+            (if (get-buffer new-name)
+                (error "A buffer named '%s' already exists!" new-name)
+              (rename-file filename new-name 1)
+              (rename-buffer new-name)
+              (set-visited-file-name new-name)
+              (set-buffer-modified-p nil)
+              (message "File '%s' successfully renamed to '%s'"
+                       name (file-name-nondirectory new-name)))))))
+
+    (defun delete-current-buffer-file ()
+      "Remove file connected to current buffer and kill buffer."
+      (interactive)
+      (let ((filename (buffer-file-name))
+            (buffer (current-buffer))
+            (name (buffer-name)))
+        (if (not (and filename (file-exists-p filename)))
+            (ido-kill-buffer)
+          (when (yes-or-no-p "Are you sure you want to remove this file? ")
+            (delete-file filename)
+            (kill-buffer buffer)
+            (message "File '%s' successfully removed" filename)))))
+
+    (defun copy-current-file-path ()
+      "Copy the current buffer file name to the clipboard."
+      (interactive)
+      (let ((filename (if (equal major-mode 'dired-mode)
+                          default-directory
+                        (buffer-file-name))))
+        (when filename
+          (kill-new filename)
+          (message "Copied buffer file name '%s' to the clipboard." filename))))
+
+  (defun file-name-at-point ()
+    (save-excursion
+      (let* ((file-name-regexp "[./a-zA-Z0-9\-_~]")
+             (start (progn
+                      (while (looking-back file-name-regexp nil)
+                        (forward-char -1))
+                      (point)))
+             (end (progn
+                    (while (looking-at file-name-regexp)
+                      (forward-char 1))
+                    (point))))
+        (buffer-substring start end))))
+
+  (defun find-or-create-file-at-point ()
+      "Guess what parts of the buffer under point is a file name and opens it."
+      (interactive)
+      (find-file (file-name-at-point)))
+
+(defun touch-buffer-file ()
+  (interactive)
+  (insert " ")
+  (backward-delete-char 1)
+  (save-buffer))
+
+#+end_src
+
+* Lambda macro
+
+#+begin_src emacs-lisp
+
+  (defmacro λ (&rest body)
+    `(lambda ()
+       (interactive)
+       ,@body))
+
+  (defun insert-lambda ()
+    "Insert λ symbol at point."
+    (interactive)
+    (insert "\u03bb"))
+
+#+end_src
+
+* Module Setup
+
+This Org file produces a file called =org-workflow.el= which gets loaded up in =Init.org=; export it as a feature so that it can be loaded with =require=.
+
+#+begin_src emacs-lisp
+
+(provide 'in-editing)
+
+#+end_src

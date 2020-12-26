@@ -1,0 +1,48 @@
+#+TITLE: Lisp like defuns
+#+PROPERTY: header-args:emacs-lisp :tangle ~/.emacs.d/elisp/in-elisp.el
+
+This file contains the description and configuration of the productivity workflow I use with Org Mode.
+
+* Table of Contents
+:PROPERTIES:
+:TOC:      :include all :ignore this
+:END:
+:CONTENTS:
+- [[#required-packagesvariables][Required packages/variables]]
+- [[#bufferregion-evaluation][Buffer/region evaluation]]
+- [[#module-setup][Module Setup]]
+:END:
+
+* Required packages/variables
+#+begin_src emacs-lisp
+
+
+#+end_src
+
+* Buffer/region evaluation
+
+#+begin_src emacs-lisp
+
+(defun eval-buffer-or-region ()
+  "Eval region if active, otherside eval buffer."
+  (interactive)
+  (if mark-active
+      (progn
+        (eval-region (region-beginning) (region-end))
+        (pop-mark)
+        (message "Region evaluated"))
+    (progn
+      (eval-buffer)
+      (message "Buffer evaluated"))))
+
+#+end_src
+
+* Module Setup
+
+This Org file produces a file called =org-workflow.el= which gets loaded up in =Init.org=; export it as a feature so that it can be loaded with =require=.
+
+#+begin_src emacs-lisp
+
+(provide 'in-elisp)
+
+#+end_src
