@@ -78,15 +78,16 @@ Tags are used to filter all tasks to find anything actionable in a particular co
 
 #+begin_src emacs-lisp
 
-  ;; Configure common tags
-  (setq org-tag-alist
-    '((:startgroup)
-       ; Put mutually exclusive tags here
-       (:endgroup)
-       ("@home" . ?H)
-       ("@work" . ?W)
-       ("batch" . ?b)
-       ("followup" . ?f)))
+;; Configure common tags
+(setq org-tag-alist
+  '((:startgroup)
+     ; Put mutually exclusive tags here
+     (:endgroup)
+     ("crypt" . ?c)
+     ("@home" . ?H)
+     ("@work" . ?W)
+     ("batch" . ?b)
+     ("followup" . ?f)))
 
 #+end_src
 
