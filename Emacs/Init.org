@@ -36,6 +36,7 @@
   - [[#notifications][Notifications]]
   - [[#auto-saving-changed-files][Auto-Saving Changed Files]]
   - [[#auto-reverting-changed-files][Auto-Reverting Changed Files]]
+  - [[#yes-or-no-p-to-y-or-n-p][Yes-or-no-p to y-or-n-p]]
   - [[#ui-toggles][UI Toggles]]
   - [[#highlight-matching-braces][Highlight Matching Braces]]
   - [[#displaying-world-time][Displaying World Time]]
@@ -44,6 +45,9 @@
 - [[#editing-configuration][Editing Configuration]]
   - [[#tab-widths][Tab Widths]]
   - [[#use-spaces-instead-of-tabs-for-indentation][Use spaces instead of tabs for indentation]]
+  - [[#dont-use-shift-to-select-text][Don't use shift to select text]]
+  - [[#overwrite-selected-text][Overwrite selected text]]
+  - [[#auto-insert-pairs][Auto insert pairs]]
   - [[#automatically-clean-whitespace][Automatically clean whitespace]]
 - [[#configuration-files][Configuration Files]]
   - [[#searching][Searching]]
@@ -773,6 +777,13 @@ anymore if I set up =diminish= correctly.
 
 #+end_src
 
+** Yes-or-no-p to y-or-n-p
+Replace all yes/no questions with y/n
+
+#+begin_src emacs-lisp
+(fset 'yes-or-no-p 'y-or-n-p)
+#+end_src
+
 ** UI Toggles
 
 #+begin_src emacs-lisp
@@ -854,6 +865,24 @@ Default to an indentation size of 2 spaces since it's the norm for pretty much e
 
   (setq-default indent-tabs-mode nil)
 
+#+end_src
+
+** Don't use shift to select text
+
+#+begin_src emacs-lisp
+(setq shift-select-mode nil)
+#+end_src
+
+** Overwrite selected text
+When region is active and any key/text is pressed delete selected text.
+#+begin_src emacs-lisp
+(delete-selection-mode 1) ;; Overwrite selected text
+#+end_src
+
+** Auto insert pairs
+Auto close parentheses and similar
+#+begin_src emacs-lisp
+(electric-pair-mode 1)
 #+end_src
 
 ** Automatically clean whitespace
