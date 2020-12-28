@@ -1865,11 +1865,9 @@ Set up Org Mode with a baseline configuration.  The following sections will add 
     (setq org-modules
       '(org-crypt
           org-habit
-          ;; TODO: Delete org-* from the followings and check on
-          ;; customize group 'org'
-          org-bookmark
-          org-eshell
-          org-irc))
+          bookmark
+          eshell
+          irc))
 
     (setq org-refile-targets '((nil :maxlevel . 3)
                               (org-agenda-files :maxlevel . 3)))
