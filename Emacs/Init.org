@@ -20,7 +20,7 @@
   - [[#whole-line-or-region][Whole line or region]]
   - [[#unset][Unset]]
   - [[#set-custom-keybinding][Set custom keybinding]]
-  - [[#modal-editing-with-modalka][Modal editing with modalka]]
+  - [[#modal-editing-with-my-own-package][Modal editing with my own package]]
 - [[#general-configuration][General Configuration]]
   - [[#user-interface][User Interface]]
   - [[#theme][Theme]]
@@ -463,8 +463,11 @@ aren't related to any package.
 ;; (global-set-key (kbd "C-c n s") 'proced) ;; s -> system
 #+END_SRC
 
-** Modal editing with modalka
-
+** Modal editing with my own package
+Defined on 'elisp/Custom-Modal.org'
+#+begin_src emacs-lisp
+(require 'in-custom-modal)
+#+end_src
 * General Configuration
 ** User Interface
 
@@ -481,6 +484,7 @@ Clean up Emacs' user interface, make it more minimal.
 (tooltip-mode -1)    ; Disable tooltips
 (set-fringe-mode 10) ; Give some breathing room
 (menu-bar-mode -1)   ; Disable the menu bar
+(set-default 'cursor-type 'bar) ; bar is more intuitive
 
 ;; Set up the visible bell
 (setq-default visible-bell t
