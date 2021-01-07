@@ -10,13 +10,25 @@ This file contains the description and configuration of the productivity workflo
 :CONTENTS:
 - [[#ideas-and-commentaries][Ideas and commentaries]]
   - [[#idea][Idea]]
-  - [[#must-do-05-0][Must do [0/5] [0%]​]]
+  - [[#must-do-35-60][Must do [3/5] [60%]​]]
 - [[#package-heading][Package heading]]
 - [[#required-packagesvariables][Required packages/variables]]
 - [[#definitions][Definitions]]
-- [[#with-keys][With keys]]
-- [[#modal-mode][Modal mode]]
-- [[#keybindings-for-the-modal][Keybindings for the modal]]
+  - [[#mode][Mode]]
+  - [[#cursor-type][Cursor type]]
+  - [[#cursor-color][Cursor color]]
+  - [[#keymaps][Keymaps]]
+  - [[#states][States]]
+- [[#defuns][Defuns]]
+  - [[#mode-startend][Mode start/end]]
+  - [[#cursor][Cursor]]
+  - [[#maps][Maps]]
+  - [[#setup-states][Setup states]]
+  - [[#keybinding-definition][Keybinding definition]]
+- [[#keybindings][Keybindings]]
+  - [[#shared-map-generic-keys][Shared map (Generic keys)]]
+  - [[#command-map][Command map]]
+  - [[#editing-map][Editing map]]
 - [[#module-setup][Module Setup]]
 :END:
 
@@ -33,11 +45,11 @@ For now I'm only implementing the first one. I'm using Modalka and Evil as guide
   - I don't want to define ANY keybindings. Anyone has preferences and this will force to bind only the needed keys.
 - For now I'm only thinking on only two modes. I don't want to be defining keys for many modes (I think nobody really want)
 - Not fancy function definitions. Evil defined lots (really lots) of functions to jump, move, and move. I prefer to leave this as vanilla as posible.
-** Must do [0/5] [0%]
+** Must do [3/5] [60%]
 
-- [ ] Create a better minor mode. (Don't use macro?)
-- [ ] Delete buffer-local minor mode.
-- [ ] Implements multiples keymaps? Future feature.
+- [X] Create a better minor mode. (Don't use macro?)
+- [X] Delete buffer-local minor mode.
+- [X] Implements multiples keymaps? Future feature.
   Must have a solid initial map before implement this.
 - [ ] Define keys.
 - [ ] Hide from wich-key un-deleteable keys. (Ex: C-x 8)
@@ -45,7 +57,7 @@ For now I'm only implementing the first one. I'm using Modalka and Evil as guide
 * Package heading
 
 #+begin_src emacs-lisp
-;;; custom-modal.el --- Easily introduce native modal editing of your own design -*- lexical-binding: t; -*-
+;;; cm.el --- Easily introduce native modal editing of your own design -*- lexical-binding: t; -*-
 ;;
 ;; Copyright © 2015–present Mark Karpov <markkarpov92@gmail.com>
 ;;
@@ -83,23 +95,27 @@ For now I'm only implementing the first one. I'm using Modalka and Evil as guide
 #+begin_src emacs-lisp
 
 (require 'cl-lib)
-(require 'quail)
 
 #+end_src
 
 * Definitions
+** Mode
+
+#+begin_src emacs-lisp
+(defgroup cm nil
+  "Introduce native modal editing of your own design"
+  :group  'editing
+  :tag    "Cm"
+  :prefix "cm-"
+
+  :link   '(url-link :tag "GitHub" "https://github.com/NicolasIriarte"))
+#+end_src
+** Cursor type
 
 #+begin_src emacs-lisp
 
-(defgroup custom-modal nil
-  "Introduce native modal editing of your own design"
-  :group  'editing
-  :tag    "Custom-Modal"
-  :prefix "custom-modal-"
-  :link   '(url-link :tag "GitHub" "https://github.com/NicolasIriarte"))
-
-(defcustom custom-modal-cursor-type 'box
-  "Cursor type to use in `custom-modal-mode'.
+(defcustom cm-command-cursor-type 'box
+  "Cursor type to use in `cm-mode'.
 
 See description of `cursor-type' for mode information, this
 variable should follow the same conventions."
@@ -116,110 +132,292 @@ variable should follow the same conventions."
           (cons  :tag "display a horizontal bar cursor with given height"
                  (const hbar (integer :tag "height of cursor")))))
 
-;;;###autoload
-(defcustom custom-modal-excluded-modes nil
-  "List of major modes for which `custom-modal-mode' should not be activated.
+(defcustom cm-editing-cursor-type 'bar
+  "Cursor type to use in `cm-mode'.
 
-This variable is considered when Custom-Modal is enabled globally via
-`global-custom-modal-mode'."
-  :tag  "Excluded Modes"
-  :type '(repeat :tag "Major modes to exclude" symbol))
+See description of `cursor-type' for mode information, this
+variable should follow the same conventions."
+  :tag "Cursor Type"
+  :type '(choice
+          (const :tag "use the cursor specified for the frame" t)
+          (const :tag "don't display a cursor" nil)
+          (const :tag "display a filled box cursor" box)
+          (const :tag "display a hollow box cursor" hollow)
+          (const :tag "display a vertical bar cursor with default width" bar)
+          (cons  :tag "display a vertical bar cursor with given width"
+                 (const bar) (integer :tag "width of cursor"))
+          (const :tag "display a horizontal bar cursor with default height" hbar)
+          (cons  :tag "display a horizontal bar cursor with given height"
+                 (const hbar (integer :tag "height of cursor")))))
 
-(defvar custom-modal--default-cursor-color nil)
-(defvar custom-modal-cursor-color "#ff7300"
+(defvar cm-default-cursor-type nil
+  "Used to store default value.")
+
+#+end_src
+** Cursor color
+
+#+begin_src emacs-lisp
+
+(defvar cm--default-cursor-color nil
+  "Used to store default value.")
+
+(defvar cm-command-cursor-color "#ff7300"
   "Color of cursor when custom modal is enbled.
 Set to nil to disable.")
 
-(defvar custom-modal-mode-map (make-sparse-keymap)
-  "This is Custom-Modal mode map, used to translate your keys.")
+(defvar cm-editing-cursor-color nil
+  "Color of cursor when custom modal is enbled.
+Set to nil to default color.")
 
-(defvar custom-modal--original-map nil
+#+end_src
+
+** Keymaps
+
+#+begin_src emacs-lisp
+
+(defvar cm-command-map (make-sparse-keymap)
+  "This is Cm mode map, used to store your keys.
+
+It has priority over shared-map.")
+(suppress-keymap cm-command-map t)
+
+(defvar cm-editing-map (make-sparse-keymap)
+  "This is Cm mode map, used to store your keys.
+
+It has priority over shared-map.")
+
+(defvar cm-shared-map (make-keymap)
+  "Map used globally when this mode is enabled.
+
+It has the lowest priority.")
+
+(defvar cm--original-map nil
   "Save the global keymap to restore later.")
 
+(defvar cm--map-alist nil
+  "Store the current map alist for the emulation mode map.")
 #+end_src
 
-* With keys
-Run command/defun with defaults keys. This is useful when we need (for example) write text for a defun on command-mode
+** States
 
 #+begin_src emacs-lisp
 
+(defcustom cm-default-state 'command
+  "Default state to start `cm-mode'.
 
-(defun custom-modal-run-with-global-map (cmd)
-  "Run CMD with normal Emacs keys."
-  (global-custom-modal-mode -1)
-  (funcall cmd))
+Possibles options listed below."
+  :tag "Default state"
+  :type '(choice
+          (const :tag "Start on command state. Recommended." command )
+          (const :tag "Start on editing state" editing)))
 
 #+end_src
+* Defuns
 
-* Modal mode
+** Mode start/end
 
 #+begin_src emacs-lisp
 
-(defun custom-modal-load-empy-global-map ()
-  "Initialize an empty global map."
-  (use-global-map (make-sparse-keymap)))
+(define-minor-mode cm-mode
+  "Toggle the `cm-mode' minor mode.
 
-(defun custom-modal-restore-global-map ()
-  "Return to original global map."
-  (use-global-map custom-modal--original-map))
-
-;;;###autoload
-(define-minor-mode custom-modal-mode
-  "Toggle the `custom-modal-mode' minor mode.
-
-With a prefix argument ARG, enable `custom-modal-mode' if ARG is
+With a prefix argument ARG, enable `cm-mode' if ARG is
 positive, and disable it otherwise.  If called from Lisp, enable
 the mode if ARG is omitted or NIL, and toggle it if ARG is
 `toggle'.
 
-This minor mode setups translation of key bindings according to
-configuration created previously with `custom-modal-define-key' and
-`custom-modal-define-keys'."
-  nil "↑" custom-modal-mode-map
-  (setq-local cursor-type
-              (if custom-modal-mode
-                  custom-modal-cursor-type
-                (default-value 'cursor-type))))
+This minor mode setups translation of key bindings acording to
+configuration created previously with `cm-define-key' and
+`cm-define-keys'."
+  :lighter "↑"
+;;  :keymap
+  :init-value nil
+  :global t
 
-(defun custom-modal--maybe-activate ()
-  "Activate `custom-modal-mode' if current buffer is not minibuffer \
-or blacklisted.
-
-This is used by `custom-modal-global-mode'."
-  (unless (or (minibufferp)
-              (member major-mode custom-modal-excluded-modes))
-    (custom-modal-mode 1)))
-
-;;;###autoload
-(define-globalized-minor-mode global-custom-modal-mode
-  custom-modal-mode
-  custom-modal--maybe-activate
-  (if custom-modal-mode
-      (progn
-        (setq custom-modal--original-map (copy-keymap (current-global-map)))
-        (custom-modal-load-empy-global-map)
-        (setq custom-modal--default-cursor-color (frame-parameter nil 'cursor-color))
-        (set-cursor-color custom-modal-cursor-color))
+  (cm-save-restore-cursor)
+  (cm-load-maps)
+  (if cm-mode
+      (cond ((eq cm-default-state 'command)
+             (cm-command-state))
+            ((eq cm-default-state 'editing)
+             (cm-editing-state))
+            (t (message "Error cm-default-state not recognized.")))
     (progn
-      (custom-modal-restore-global-map)
-      (set-cursor-color custom-modal--default-cursor-color))))
-
-(defun custom-modal--input-function-advice (fnc key)
-  "Call FNC with KEY as argument only when `custom-modal-mode' is disabled.
-
-Otherwise use `list'."
-  (funcall (if custom-modal-mode #'list fnc) key))
-
-(advice-add 'quail-input-method :around #'custom-modal--input-function-advice)
+      (cm-clean-emulation-mode-map-alist))))
 
 #+end_src
 
-* Keybindings for the modal
+** Cursor
+
 #+begin_src emacs-lisp
 
-(global-set-key (kbd "<f12>") 'global-custom-modal-mode)
-(define-key custom-modal-mode-map
-  (kbd "<f12>") 'global-custom-modal-mode)
+(defun cm-save-restore-cursor ()
+  "Save or restore the cursor depending of cm-mode."
+  (if cm-mode
+      (progn
+        (unless cm-default-cursor-type
+          (setq cm-default-cursor-type cursor-type))
+        ;; more here
+        (unless cm--default-cursor-color
+          (setq cm--default-cursor-color (frame-parameter nil 'cursor-color)))
+       (unless cm-editing-cursor-color
+         (setq cm-editing-cursor-color cm--default-cursor-color))
+        )
+    (progn
+      ;; Cursor type
+      (setq-default cursor-type
+                    cm-default-cursor-type)
+      (setq cm-default-cursor-type nil)
+      ;; Cursor color
+      (set-cursor-color cm--default-cursor-color)
+      (setq cm--default-cursor-color nil)
+      )))
+
+#+end_src
+
+** Maps
+
+#+begin_src emacs-lisp
+
+(defun cm-load-maps ()
+  "Load the corrent map depending of cm."
+  (if cm-mode
+      (cm-load-cm-global-map)
+    (cm-restore-global-map)))
+
+(defun cm-load-cm-global-map ()
+  "Initialize an empty global map."
+  (unless cm--original-map
+    (setq cm--original-map (copy-keymap (current-global-map))))
+  (use-global-map cm-shared-map)
+
+  (substitute-key-definition
+   'self-insert-command
+   'self-insert-command
+   cm-shared-map cm--original-map))
+
+(defun cm-restore-global-map ()
+  "Return to original global/local map."
+  (use-global-map cm--original-map)
+
+  (setq emulation-mode-map-alists
+        (delq 'cm-editing-map emulation-mode-map-alists))
+
+  (setq emulation-mode-map-alists
+        (delq 'cm-command-map emulation-mode-map-alists))
+
+  (setq cm--original-map nil))
+
+(defun cm-clean-emulation-mode-map-alist ()
+  "Delete cm keymaps from the emulation mode map alists."
+  (setq emulation-mode-map-alists
+        (delq 'cm--map-alist emulation-mode-map-alists)))
+
+#+end_src
+
+** Setup states
+
+#+begin_src emacs-lisp
+
+(defun cm-command-state ()
+  "Load command state."
+  (interactive)
+  (set-cursor-color cm-command-cursor-color)
+
+  (setq-default cursor-type cm-command-cursor-type)
+
+  ;; Clean emulation map and load new ones
+  (cm-clean-emulation-mode-map-alist)
+  (setq cm--map-alist `((cm-mode . ,cm-command-map)))
+  (add-to-list 'emulation-mode-map-alists 'cm--map-alist)
+
+  (message "Command mode loaded..."))
+
+(defun cm-editing-state ()
+  "Load command state."
+  (interactive)
+  (set-cursor-color cm-editing-cursor-color)
+  (setq-default cursor-type cm-editing-cursor-type)
+
+  ;; Clean emulation map and load new ones
+  (cm-clean-emulation-mode-map-alist)
+  (setq cm--map-alist `((cm-mode . ,cm-editing-map)))
+  (add-to-list 'emulation-mode-map-alists 'cm--map-alist)
+
+  (message "Editing mode loaded..."))
+
+#+end_src
+
+** Keybinding definition
+
+#+begin_src emacs-lisp
+
+(defun cm-set-keys (keymap key def &rest bindings)
+  "Bind KEY to DEF on KEYMAP.
+
+It can be in the single key-definition form.
+`(cm-set-key (current-global-map) \"H-f\" 'backward-char)'
+
+Or multiples.
+`(cm-set-key (current-global-map)
+            \"H-f\" 'forward-char
+            \"H-b\" 'backward-char
+            \"H-l\" 'find-file)'"
+  (while key
+    (define-key keymap (kbd key) def)
+    (setq key (pop bindings)
+          def (pop bindings))))
+
+#+end_src
+
+* Keybindings
+** Shared map (Generic keys)
+
+#+begin_src emacs-lisp
+
+(cm-set-keys cm-shared-map
+             "C-a" 'move-beginning-of-line
+             "C-b" 'backward-char
+             "C-d" 'delete-char
+             "C-e" 'move-end-of-line
+             "C-f" 'forward-char
+             "C-g" 'keyboard-quit
+             "C-h" 'backward-delete-char
+             "C-n" 'next-line
+             "C-p" 'previous-line
+             "C-s" 'swiper
+             "C-x C-c" 'save-buffers-kill-terminal
+             "M-a" 'beginning-of-buffer
+             "M-b" 'backward-word
+             "M-e" 'end-of-buffer
+             "M-f" 'forward-word
+             "M-x" 'counsel-M-x
+             "<f12>" 'cm-mode
+             )
+
+#+end_src
+
+** Command map
+#+begin_src emacs-lisp
+
+(cm-set-keys cm-command-map
+             "0" 'delete-window
+             "1" 'delete-other-windows
+             "2" 'split-window-below
+             "3" 'split-window-right
+             "<escape>" 'cm-editing-state
+             "<f8>" 'forward-char
+             )
+
+#+end_src
+
+** Editing map
+
+#+begin_src emacs-lisp
+
+(cm-set-keys cm-editing-map
+             "C-SPC" 'cm-command-state
+             )
 
 #+end_src
 
