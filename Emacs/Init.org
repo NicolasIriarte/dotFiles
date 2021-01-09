@@ -462,7 +462,25 @@ Configure some commands to work with whole line or region.
    #+END_SRC
 
 ** Modal editing with modalka
-
+#+begin_src emacs-lisp
+(use-package view
+  :ensure nil
+  :custom
+  (view-mode-map
+        (let ((map (make-sparse-keymap)))
+          (define-key map "f" 'forward-char)
+          (define-key map "9" 'digit-argument)
+          (define-key map "8" 'digit-argument)
+          (define-key map "7" 'digit-argument)
+          (define-key map "6" 'digit-argument)
+          (define-key map "5" 'digit-argument)
+          (define-key map "4" 'digit-argument)
+          (define-key map "3" 'digit-argument)
+          (define-key map "2" 'digit-argument)
+          (define-key map "1" 'digit-argument)
+          (define-key map "0" 'digit-argument)
+          map)))
+#+end_src
 * General Configuration
 ** User Interface
 
