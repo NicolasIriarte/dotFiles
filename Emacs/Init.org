@@ -463,12 +463,16 @@ Configure some commands to work with whole line or region.
 
 ** Modal editing with modalka
 #+begin_src emacs-lisp
+(require 'in-modal)
+
 (use-package view
   :ensure nil
   :custom
+  ;; Read only == View mode
+  (view-read-only t)
   (view-mode-map
         (let ((map (make-sparse-keymap)))
-          (define-key map "f" 'forward-char)
+          (define-key map "i" 'View-exit)
           (define-key map "9" 'digit-argument)
           (define-key map "8" 'digit-argument)
           (define-key map "7" 'digit-argument)

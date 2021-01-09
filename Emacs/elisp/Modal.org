@@ -1,0 +1,51 @@
+#+TITLE:Modal editing state
+#+PROPERTY: header-args:emacs-lisp :tangle ~/.emacs.d/elisp/in-modal.el
+
+This file contains the description and configuration of the productivity workflow I use with Org Mode.
+
+* Table of Contents
+:PROPERTIES:
+:TOC:      :include all :ignore this
+:END:
+:CONTENTS:
+- [[#required-packagesvariables][Required packages/variables]]
+- [[#view-mode-for-modal-editing][View mode for modal editing]]
+- [[#module-setup][Module Setup]]
+:END:
+
+* Required packages/variables
+#+begin_src emacs-lisp
+
+#+end_src
+
+* View mode for modal editing
+
+#+begin_src emacs-lisp
+(require 'view)
+
+(defun view-mode-all-files ()
+  (interactive)
+  (let ((state (not view-mode)))
+    (delq 'nil
+          (mapcar (lambda (file)
+                    (when
+                        (and (buffer-file-name file)
+                             (file-exists-p (buffer-file-name file)))
+                      (with-current-buffer (buffer-name file)
+                        (if state
+                            (view-mode)
+                          (View-exit)))
+                      (buffer-name file)))
+                  (buffer-list)))))
+
+#+end_src
+
+* Module Setup
+
+This Org file produces a file called =org-workflow.el= which gets loaded up in =Init.org=; export it as a feature so that it can be loaded with =require=.
+
+#+begin_src emacs-lisp
+
+(provide 'in-modal)
+
+#+end_src
