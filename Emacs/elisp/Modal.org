@@ -15,7 +15,7 @@ This file contains the description and configuration of the productivity workflo
 
 * Required packages/variables
 #+begin_src emacs-lisp
-
+(require 'general)
 #+end_src
 
 * View mode for modal editing
@@ -23,21 +23,30 @@ This file contains the description and configuration of the productivity workflo
 #+begin_src emacs-lisp
 (require 'view)
 
+(defvar view-allowed-buff nil
+  "White list of buffer that view mode can be enabled.
+
+It will be buffers without files asociated.  Like scratch.")
+
 (defun view-mode-all-files ()
   (interactive)
   (let ((state (not view-mode)))
+    (dolist (buf view-allowed-buff)
+      (when (get-buffer buf)
+        (with-current-buffer buf
+          (if state
+              (view-mode)
+            (View-exit)))
+       ))
     (delq 'nil
           (mapcar (lambda (file)
-                    (when
-                        (and (buffer-file-name file)
-                             (file-exists-p (buffer-file-name file)))
+                    (when (buffer-file-name file)
                       (with-current-buffer (buffer-name file)
                         (if state
                             (view-mode)
                           (View-exit)))
                       (buffer-name file)))
                   (buffer-list)))))
-
 #+end_src
 
 * Module Setup

@@ -167,15 +167,15 @@ With argument, do this that many times."
 
 #+begin_src emacs-lisp
 
-  (defmacro λ (&rest body)
-    `(lambda ()
-       (interactive)
-       ,@body))
+(defmacro λ (&rest body)
+  `(lambda ()
+     (interactive)
+     ,@body))
 
-  (defun insert-lambda ()
-    "Insert λ symbol at point."
-    (interactive)
-    (insert "\u03bb"))
+(defun insert-lambda ()
+  "Insert λ symbol at point."
+  (interactive)
+  (insert "\u03bb"))
 
 #+end_src
 
