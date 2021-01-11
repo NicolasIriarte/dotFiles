@@ -459,14 +459,14 @@ Configure some commands to work with whole line or region.
 (require 'in-modal)
 
 (global-set-key (kbd "C-z") 'view-mode-all-files)
-(global-set-key (kbd "C-Z") 'view-mode)
+(global-set-key (kbd "C-S-z") 'view-mode)
 
 (use-package view
   :ensure nil
-  :config
+  :init
   (setq view-allowed-buff '("*scratch*"
                             "*dashboard*"))
-
+  (view-mode-all-files t)
   :custom
   ;; Read only === View mode
   (view-read-only t)
@@ -480,7 +480,7 @@ Configure some commands to work with whole line or region.
   (my/view-def
    "i"  'view-mode-all-files
    "C-z" 'view-mode-all-files
-   "C-Z" 'View-exit
+   "C-S-z" 'View-exit
    "tw" '(whitespace-mode :which-key "whitespaces")
    "fR"  '(revert-buffer :which-key "Revert buffer")
 
@@ -493,21 +493,22 @@ Clean up Emacs' user interface, make it more minimal.
 
 #+begin_src emacs-lisp
 
-  ;; Thanks, but no thanks
-  ;;(setq inhibit-startup-message t) ;; No needed couse dashboard?
+;; Thanks, but no thanks
+;;(setq inhibit-startup-message t) ;; No needed couse dashboard?
 
 
-  (scroll-bar-mode -1) ; Disable visible scrollbar
-  (tool-bar-mode -1)   ; Disable the toolbar
-  (tooltip-mode -1)    ; Disable tooltips
-  (set-fringe-mode 10) ; Give some breathing room
-  (menu-bar-mode -1)   ; Disable the menu bar
+(scroll-bar-mode -1) ; Disable visible scrollbar
+(tool-bar-mode -1)   ; Disable the toolbar
+(tooltip-mode -1)    ; Disable tooltips
+(set-fringe-mode 10) ; Give some breathing room
+(menu-bar-mode -1)   ; Disable the menu bar
+(set-default 'cursor-type 'bar)
 
-  ;; Set up the visible bell
-  (setq-default visible-bell t
-        ;; With this always split vertically by default
-        split-height-threshold nil
-        split-width-threshold 0)
+;; Set up the visible bell
+(setq-default visible-bell t
+      ;; With this always split vertically by default
+      split-height-threshold nil
+      split-width-threshold 0)
 #+end_src
 
 Improve scrolling.

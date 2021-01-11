@@ -28,25 +28,54 @@ This file contains the description and configuration of the productivity workflo
 
 It will be buffers without files asociated.  Like scratch.")
 
-(defun view-mode-all-files ()
-  (interactive)
-  (let ((state (not view-mode)))
+(defvar view-command-cursor-type 'box
+  "Cursort shape on view mode.")
+
+(defvar view-command-cursor-color "#ff7b00"
+  "Cursort shape on view mode.")
+
+(defvar view-normal-cursor-type 'bar
+  "Cursort shape on view mode.")
+
+(defvar view-normal-cursor-color "#e3dedd"
+  "Cursort shape on view mode.")
+
+
+
+(defun view-mode-all-files (&optional arg)
+  (interactive "P")
+  (let ((state (if arg
+                   arg
+                 (not view-mode))))
     (dolist (buf view-allowed-buff)
       (when (get-buffer buf)
         (with-current-buffer buf
           (if state
-              (view-mode)
-            (View-exit)))
-       ))
+              (progn
+                (set-cursor-color view-command-cursor-color)
+                (set 'cursor-type view-command-cursor-type)
+                (view-mode t))
+            (progn
+              (set-cursor-color view-normal-cursor-color)
+              (set 'cursor-type view-normal-cursor-type)
+              (View-exit))))
+        ))
     (delq 'nil
           (mapcar (lambda (file)
                     (when (buffer-file-name file)
                       (with-current-buffer (buffer-name file)
                         (if state
-                            (view-mode)
-                          (View-exit)))
+                            (progn
+                              (set-cursor-color view-command-cursor-color)
+                              (set 'cursor-type view-command-cursor-type)
+                              (view-mode t))
+                          (progn
+                            (set-cursor-color view-normal-cursor-color)
+                            (set 'cursor-type view-normal-cursor-type)
+                            (View-exit))))
                       (buffer-name file)))
                   (buffer-list)))))
+
 #+end_src
 
 * Module Setup
