@@ -423,25 +423,7 @@ Configure some commands to work with whole line or region.
 
    (global-set-key (kbd "C-t") 'switch-to-previous-buffer)
 
-   ;; (global-set-key (kbd "C-x f r") 'rename-current-buffer-file)
-   ;; (global-set-key (kbd "C-x f D") 'delete-current-buffer-file)
-   ;; (global-set-key (kbd "C-x f p") 'copy-current-file-path)
-   ;; (global-set-key (kbd "C-x f f") 'find-or-create-file-at-point) ;; AltGr + 'f'ind
-   ;; (global-set-key (kbd "C-x f F") 'find-or-create-file-at-point-other-window) ;; AltGr + 'F'ind
-   ;; (global-set-key (kbd "C-x f t") 'touch-buffer-file)
 
-   ;; (global-set-key (kbd "C-c n p") (lambda()
-   ;; 				  (interactive)
-   ;; 				  (find-file "~/Dropbox/Notes/data.org")))
-   ;; (global-set-key (kbd "C-c n c") (lambda()
-   ;; 				  (interactive)
-   ;; 				  (find-file "~/.emacs.d/init.org")))
-   ;; (global-set-key (kbd "C-c n w") (lambda()
-   ;; 				  (interactive)
-   ;; 				  (setq show-trailing-whitespace
-   ;; 					(not show-trailing-whitespace))))
-   ;; (global-set-key (kbd "C-c n W") 'delete-trailing-whitespace)
-   ;; (global-set-key (kbd "C-c n s") 'proced) ;; s -> system
    #+END_SRC
 
 ** Modal editing with modalka
@@ -470,12 +452,22 @@ Configure some commands to work with whole line or region.
                  "H" "Q" "\C-?" "\\" "\n" "\r" "c" "d" "e" "g" "h" "m" "n"                 "o" "p" "q" "r" "s" "u" "w" "x" "y" "z" [?\S-\ ]))
     (define-key view-mode-map key nil))
 
+
+   ;; (global-set-key (kbd "C-x f f") 'find-or-create-file-at-point) ;; AltGr + 'f'ind
+  ;; (global-set-key (kbd "C-x f F") 'find-or-create-file-at-point-other-window) ;; AltGr + 'F'ind
+
+
   (my/view-def
    "i"  'view-mode-all-files
    "C-z" 'view-mode-all-files
    "C-S-z" 'View-exit
    "tw" '(whitespace-mode :which-key "whitespaces")
-   "fR"  '(revert-buffer :which-key "Revert buffer")
+   "fR" '(revert-buffer :which-key "Revert buffer")
+   "fr" '(rename-current-buffer-file :which-key "Rename")
+   "fD" '(delete-current-buffer-file :which-key "Delete")
+   "fp" '(copy-current-file-path :which-key "Copy path")
+   "ft" '(touch-buffer-file :which-key "Touch file")
+
    "C-x C-f" 'find-file-read-only
    ))
 #+end_src
