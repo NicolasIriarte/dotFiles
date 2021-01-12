@@ -16,7 +16,6 @@
 - [[#keyboard-bindings][Keyboard Bindings]]
   - [[#keybinding-panel-which-key][Keybinding Panel (which-key)]]
   - [[#simplify-key-bindings-generalel][Simplify key bindings (general.el)]]
-  - [[#enable-keychord-bind-with-use-package][Enable keychord bind with use-package]]
   - [[#whole-line-or-region][Whole line or region]]
   - [[#unset][Unset]]
   - [[#set-custom-keybinding][Set custom keybinding]]
@@ -31,10 +30,7 @@
   - [[#modeline][Modeline]]
     - [[#basic-customization][Basic Customization]]
     - [[#enable-mode-diminishing][Enable Mode Diminishing]]
-    - [[#smart-mode-line][Smart Mode Line]]
     - [[#doom-modeline][Doom Modeline]]
-  - [[#notifications][Notifications]]
-  - [[#auto-saving-changed-files][Auto-Saving Changed Files]]
   - [[#auto-reverting-changed-files][Auto-Reverting Changed Files]]
   - [[#yes-or-no-p-to-y-or-n-p][Yes-or-no-p to y-or-n-p]]
   - [[#highlight-matching-braces][Highlight Matching Braces]]
@@ -75,7 +71,6 @@
   - [[#languages][Languages]]
     - [[#language-server-support][Language Server Support]]
     - [[#debug-adapter-support][Debug Adapter Support]]
-    - [[#meta-lisp][Meta Lisp]]
     - [[#clojure][Clojure]]
     - [[#common-lisp][Common Lisp]]
     - [[#scheme][Scheme]]
@@ -105,6 +100,8 @@
   - [[#end-use-package-org-mode][End use-package org-mode]]
   - [[#update-table-of-contents-on-save][Update Table of Contents on Save]]
   - [[#reminders][Reminders]]
+  - [[#journaling][Journaling]]
+  - [[#encryption][Encryption]]
   - [[#presentations][Presentations]]
   - [[#addons-to-try][Addons to Try]]
 - [[#applications][Applications]]
@@ -147,7 +144,7 @@ I don't want a bunch of transient files showing up as untracked in the Git repo 
   (recentf-mode nil)
   (add-hook 'after-init-hook 'recentf-mode)
   ;; Upload recentf every 5 minutes
-  (run-at-time nil (* 5 60) 'recentf-save-list)
+  ;; (run-at-time nil (* 5 60) 'recentf-save-list) ;; So anoying
 
   ;; Keep customization settings in a temporary file (thanks Ambrevar!)
   (setq custom-file
@@ -199,11 +196,13 @@ I've got a folder of custom elisp files which must be added to the load path.
 
 #+begin_src emacs-lisp
 
-  (setq my/elisp-dir "~/.emacs.d/elisp")
-  ;; Compile every `.el' file if needed.
-  (byte-recompile-directory my/elisp-dir 0)
-  ;; Add my elisp path to load-path
-  (push my/elisp-dir load-path)
+(setq my/elisp-dir "~/.emacs.d/elisp")
+;; Compile every `.el' file if needed.
+(byte-recompile-directory my/elisp-dir 0)
+;; Add my elisp path to load-path
+(push my/elisp-dir load-path)
+
+(require 'in-secret)
 
 #+end_src
 
@@ -344,15 +343,6 @@ based on the prefix keys you entered.  Learned about this one from Spacemacs.
 
 #+end_src
 
-** Enable keychord bind with use-package
-
-#+begin_src emacs-lisp
-
-  (use-package use-package-chords
-    :disabled
-    :config (key-chord-mode 1))
-
-#+end_src
 ** Whole line or region
 Configure some commands to work with whole line or region.
 - Copy
@@ -463,10 +453,13 @@ Configure some commands to work with whole line or region.
 
 (use-package view
   :ensure nil
+  ;; Whithout dashboard I must change the :hook
+  :requires (dashboard)
+  ;; Latest hook that I found
+  :hook (dashboard-after-initialize . view-mode-all-files)
   :init
   (setq view-allowed-buff '("*scratch*"
                             "*dashboard*"))
-  (view-mode-all-files t)
   :custom
   ;; Read only === View mode
   (view-read-only t)
@@ -483,7 +476,7 @@ Configure some commands to work with whole line or region.
    "C-S-z" 'View-exit
    "tw" '(whitespace-mode :which-key "whitespaces")
    "fR"  '(revert-buffer :which-key "Revert buffer")
-
+   "C-x C-f" 'find-file-read-only
    ))
 #+end_src
 * General Configuration
@@ -689,55 +682,6 @@ The [[https://github.com/myrjola/diminish.el][diminish]] package hides pesky min
   (use-package diminish)
 
 #+end_src
-
-*** Smart Mode Line
-
-Prettify the modeline with [[https://github.com/Malabarba/smart-mode-line/][smart-mode-line]].  Really need to re-evaluate the
-ordering of =mode-line-format=.  Also not sure if =rm-excluded-modes= is needed
-anymore if I set up =diminish= correctly.
-
-#+begin_src emacs-lisp
-
-  (use-package smart-mode-line
-    :disabled
-    :config
-    (setq sml/no-confirm-load-theme t)
-    (sml/setup)
-    (sml/apply-theme 'respectful)  ; Respect the theme colors
-    (setq sml/mode-width 'right
-	sml/name-width 60)
-
-    (setq-default mode-line-format
-    `("%e"
-	,(when my/exwm-enabled
-	    '(:eval (format "[%d] " exwm-workspace-current-index)))
-	mode-line-front-space
-	mode-line-mule-info
-	mode-line-client
-	mode-line-modified
-	mode-line-remote
-	mode-line-frame-identification
-	mode-line-buffer-identification
-	sml/pos-id-separator
-	(vc-mode vc-mode)
-	" "
-	;mode-line-position
-	sml/pre-modes-separator
-	mode-line-modes
-	" "
-	mode-line-misc-info))
-
-    (setq rm-excluded-modes
-      (mapconcat
-	'identity
-	; These names must start with a space!
-	'(" GitGutter" " MRev" " company"
-	" Helm" " Undo-Tree" " Projectile.*" " Z" " Ind"
-	" Org-Agenda.*" " ElDoc" " SP/s" " cider.*")
-	"\\|")))
-
-#+end_src
-
 *** Doom Modeline
 
 #+begin_src emacs-lisp
@@ -770,34 +714,6 @@ anymore if I set up =diminish= correctly.
     (doom-modeline-major-mode-icon nil))
 
 #+end_src
-
-** Notifications
-
-[[https://github.com/jwiegley/alert][alert]] is a great library for showing notifications from other packages in a variety of ways.  For now I just use it to surface desktop notifications from package code.
-
-#+begin_src emacs-lisp
-
-  (use-package alert
-    :commands alert
-    :config
-    (setq alert-default-style 'notifications))
-
-#+end_src
-
-** Auto-Saving Changed Files
-
-#+begin_src emacs-lisp
-
-  (use-package super-save
-    :ensure t
-    :defer 1
-    :diminish super-save-mode
-    :config
-    (super-save-mode +1)
-    (setq super-save-auto-save-when-idle t))
-
-#+end_src
-
 ** Auto-Reverting Changed Files
 
 #+begin_src emacs-lisp
@@ -920,7 +836,7 @@ Auto close parentheses and similar
 
 (defun my/search-org-files ()
   (interactive)
-  (counsel-rg "" "~/Dropbox/Notes" nil "Search Notes: "))
+  (counsel-rg "" in-notes-dir nil "Search Notes: "))
 
 #+end_src
 
@@ -934,7 +850,7 @@ Auto close parentheses and similar
 (my/view-def
 
   "fn" '((lambda () (interactive)
-           (counsel-find-file "~/Dropbox/Notes/"))
+           (counsel-find-file in-notes-dir))
          :which-key "Counsel Notes")
   "fN" '(my/search-org-files :which-key "Search on Notes")
   "fs" '(sudo-edit :which-key "edit as root"))
@@ -1252,7 +1168,7 @@ I use [[https://www.passwordstore.org/][pass]] to manage all of my passwords loc
  ;;  "d"   '(:ignore t :which-key "dired")
  "dd"  '(dired :which-key "Here")
  "dh"  `(,(my/dired-link "~") :which-key "~/")
- "dn"  `(,(my/dired-link "~/Dropbox/Notes") :which-key "Notes"))
+ "dn"  `(,(my/dired-link in-notes-dir) :which-key "Notes"))
 
 #+end_src
 
@@ -1514,25 +1430,6 @@ Not so convinced about this yet.
   ;;           :program nil
   ;;           :port 9229
   ;;           :name "Node::Run")))
-
-#+end_src
-
-*** Meta Lisp
-
-Here are packages that are useful across different Lisp and Scheme implementations:
-
-#+begin_src emacs-lisp
-
-  (use-package lispy
-    :disabled
-    :hook ((emacs-lisp-mode . lispy-mode)
-           (scheme-mode . lispy-mode)))
-
-  (use-package lispyville
-    :disabled
-    :hook ((lispy-mode . lispyville-mode))
-    :config
-    (lispyville-set-key-theme '(operators c-w additional)))
 
 #+end_src
 
@@ -1829,53 +1726,53 @@ Set up Org Mode with a baseline configuration.  The following sections will add 
 
 #+begin_src emacs-lisp
 
-  (setq-default fill-column 80)
+(setq-default fill-column 80)
 
-  ;; Turn on indentation and auto-fill mode for Org files
-  (defun my/org-mode-setup ()
-    (org-indent-mode)
-    ;; (variable-pitch-mode 1)
-    (auto-fill-mode 0)
-    (visual-line-mode 1)
-    (diminish org-indent-mode))
+;; Turn on indentation and auto-fill mode for Org files
+(defun my/org-mode-setup ()
+  (org-indent-mode)
+  ;; (variable-pitch-mode 1)
+  (auto-fill-mode 0)
+  (visual-line-mode 1)
+  (diminish org-indent-mode))
 
-  (use-package org
-    :defer t
-    :hook (org-mode . my/org-mode-setup)
-    :config
-    (setq org-ellipsis " ▾"
-          org-hide-emphasis-markers t
-          org-src-fontify-natively t
-          org-src-tab-acts-natively t
-          ;; Fix indentation problems
-          org-edit-src-content-indentation 0
-          ;; Don't mess my layout when editing src blocks
-          org-src-window-setup 'current-window
-          org-hide-block-startup nil
-          org-src-preserve-indentation nil
-          org-startup-folded 'content
-          org-cycle-separator-lines 2)
+(use-package org
+  :defer t
+  :hook (org-mode . my/org-mode-setup)
+  :config
+  (setq org-ellipsis " ▾"
+        org-hide-emphasis-markers t
+        org-src-fontify-natively t
+        org-src-tab-acts-natively t
+        ;; Fix indentation problems
+        org-edit-src-content-indentation 0
+        ;; Don't mess my layout when editing src blocks
+        org-src-window-setup 'current-window
+        org-hide-block-startup nil
+        org-src-preserve-indentation nil
+        org-startup-folded 'content
+        org-cycle-separator-lines 2)
 
-    (setq org-modules
-      '(org-crypt
+  (setq org-modules
+        '(org-crypt
           org-habit
           bookmark
           eshell
           irc))
 
-    (setq org-refile-targets '((nil :maxlevel . 3)
-                              (org-agenda-files :maxlevel . 3)))
-    (setq org-outline-path-complete-in-steps nil)
-    (setq org-refile-use-outline-path t)
+  (setq org-refile-targets '((nil :maxlevel . 3)
+                             (org-agenda-files :maxlevel . 3)))
+  (setq org-outline-path-complete-in-steps nil)
+  (setq org-refile-use-outline-path t)
 
-    (org-babel-do-load-languages
-      'org-babel-load-languages
-      '((emacs-lisp . t)
-        (ledger . t)))
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (ledger . t)))
 
-    (push '("conf-unix" . conf-unix) org-src-lang-modes)
+  (push '("conf-unix" . conf-unix) org-src-lang-modes)
 
-    ;; NOTE: Subsequent sections are still part of this use-package block!
+  ;; NOTE: Subsequent sections are still part of this use-package block!
 
 #+end_src
 
@@ -2032,6 +1929,76 @@ It's nice to have a table of contents section for long literate configuration fi
   ;;   (setq org-wild-notifier-notification-title "Agenda Reminder")
   ;;   (setq org-wild-notifier-alert-time 15)
   ;;   (org-wild-notifier-mode))
+
+#+end_src
+
+** Journaling
+
+#+begin_src emacs-lisp
+
+(use-package org-journal
+  :custom
+  (org-journal-dir in-journal-dir)
+  (org-journal-date-format "%A, %d/%m/%Y")
+  (org-journal-search-result-date-format "%A, %d/%m/%Y")
+  (org-journal-enable-encryption nil) ;; Encrypt with tag
+  (org-journal-encrypt-journal t) ;; Encrypt whole file
+  (org-journal-find-file 'find-file)
+  (org-journal-search-forward-fn 'swiper)
+  (org-journal-prefix-key nil)
+  :config
+  ;; Delete defined key by this package
+  (global-unset-key (kbd "C-c C-j"))
+
+  (define-overriding-view-mode-map org-journal-mode
+    ("j m" . org-journal-mark-entries)
+    ("j r" . org-journal-read-entry)
+    ("j d" . org-journal-display-entry)
+    ("]" . org-journal-next-entry)
+    ("[" . org-journal-previous-entry)
+    ("j n" . org-journal-new-date-entry)
+    ("j s f" . org-journal-search-forever)
+    ("j s F" . org-journal-search-future)
+    ("j s w" . org-journal-search-calendar-week)
+    ("j s m" . org-journal-search-calendar-month)
+    ("j s y" . org-journal-search-calendar-year)
+    ))
+
+(my/view-def
+  "j"  '(:ignore t :which-key "Journal")
+  "jn" '(org-journal-new-entry :which-key "New")
+  "je" '((lambda () (interactive)
+           (org-journal-new-entry 2))
+         :which-key "Entries"))
+
+#+end_src
+
+** Encryption
+
+#+begin_src emacs-lisp
+
+(use-package epa-file
+  :ensure nil
+  :after org
+  :config
+  (setq epa-file-encrypt-to '(in-user-mail))
+  :custom
+  ;; If t, always asks user to select recipients.
+  ;; If nil, query user only when ‘epa-file-encrypt-to’ is not set.
+  ;; If neither t nor nil, doesn’t ask user.  In this case, symmetric
+  ;; encryption is used.
+  (epa-file-select-keys nil)
+  )
+
+(use-package org-crypt
+  :ensure nil
+  :after org
+  :custom
+  (org-crypt-disable-auto-save t)
+  (org-crypt-key in-user-mail)
+  :config
+  (org-crypt-use-before-save-magic)
+  (setq org-tags-exclude-from-inheritance '("crypt")))
 
 #+end_src
 

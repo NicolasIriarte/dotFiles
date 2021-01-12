@@ -29,17 +29,26 @@ This file contains the description and configuration of the productivity workflo
 It will be buffers without files asociated.  Like scratch.")
 
 (defvar view-command-cursor-type 'box
-  "Cursort shape on view mode.")
+  "Cursor shape on view mode.")
 
 (defvar view-command-cursor-color "#ff7b00"
-  "Cursort shape on view mode.")
+  "Cursor shape on view mode.")
 
 (defvar view-normal-cursor-type 'bar
-  "Cursort shape on view mode.")
+  "Cursor shape on view mode.")
 
 (defvar view-normal-cursor-color "#e3dedd"
-  "Cursort shape on view mode.")
+  "Cursor shape on view mode.")
 
+(defun view-update-cursor (view-enabled)
+  (if view-enabled
+      (progn
+        (set-cursor-color view-command-cursor-color)
+        (set-default 'cursor-type view-command-cursor-type))
+    (progn
+      (set-cursor-color view-normal-cursor-color)
+      (set-default 'cursor-type view-normal-cursor-type)))
+  )
 
 
 (defun view-mode-all-files (&optional arg)
@@ -50,32 +59,69 @@ It will be buffers without files asociated.  Like scratch.")
     (dolist (buf view-allowed-buff)
       (when (get-buffer buf)
         (with-current-buffer buf
+          (view-update-cursor state)
           (if state
               (progn
-                (set-cursor-color view-command-cursor-color)
-                (set 'cursor-type view-command-cursor-type)
+                (read-only-mode t)
                 (view-mode t))
             (progn
-              (set-cursor-color view-normal-cursor-color)
-              (set 'cursor-type view-normal-cursor-type)
+              (read-only-mode -1)
               (View-exit))))
         ))
     (delq 'nil
           (mapcar (lambda (file)
                     (when (buffer-file-name file)
                       (with-current-buffer (buffer-name file)
+                        (view-update-cursor state)
                         (if state
                             (progn
-                              (set-cursor-color view-command-cursor-color)
-                              (set 'cursor-type view-command-cursor-type)
+                              (read-only-mode t)
                               (view-mode t))
                           (progn
-                            (set-cursor-color view-normal-cursor-color)
-                            (set 'cursor-type view-normal-cursor-type)
+                            (read-only-mode -1)
                             (View-exit))))
                       (buffer-name file)))
                   (buffer-list)))))
 
+(defun define-overriding-view-mode-map-internal (mode-name key-bindings)
+  (let ((mapsym (intern (concat (symbol-name mode-name) "-view-map")))
+        (view-mode-sym (intern (concat (symbol-name mode-name) "-view-mode"))))
+    (eval `(defvar ,mapsym nil))
+    (eval `(defvar ,view-mode-sym nil))
+    (let ((map (make-sparse-keymap)))
+      (loop for (key . command) in key-bindings
+            do (define-key map (read-kbd-macro key) command))
+      (set mapsym map)
+      (setq minor-mode-map-alist
+            (cons (cons view-mode-sym map)
+                  (delete (assq view-mode-sym minor-mode-map-alist) minor-mode-map-alist)))
+      nil)))
+
+(defmacro define-overriding-view-mode-map (mode-name &rest key-bindings)
+  "Define major-mode specific view-mode keymap.
+Note that the car of an element of KEY-BINDINGS is `kbd' notation.
+
+For example, to define `view-mode' keys for `emacs-lisp-mode':
+ (define-overriding-view-mode-map emacs-lisp-mode
+   (\"C-m\" . find-function)
+   (\"C-j\" . find-variable))
+"
+  `(define-overriding-view-mode-map-internal ',mode-name ',key-bindings))
+
+
+
+(defun viewer-install-extension ()
+  (when view-mode
+    (set (make-local-variable (intern (concat (symbol-name major-mode) "-view-mode")))
+         t)))
+(add-hook 'view-mode-hook 'viewer-install-extension)
+(defun viewer-uninstall-extension ()
+  (kill-local-variable (intern (concat (symbol-name major-mode) "-view-mode"))))
+(defadvice view-mode-disable (before viewer activate)
+  (viewer-uninstall-extension))
+;;; [2014-10-22 Wed]Emacs 24.4
+(defadvice view--disable (before viewer activate)
+  (viewer-uninstall-extension))
 #+end_src
 
 * Module Setup
