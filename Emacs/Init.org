@@ -440,6 +440,9 @@ Configure some commands to work with whole line or region.
   ;; Latest hook that I found
   :hook (dashboard-after-initialize . view-mode-all-files)
   :init
+  (add-hook 'post-command-hook (lambda ()
+                                (interactive)
+                                (view-update-cursor view-mode)))
   (setq view-allowed-buff '("*scratch*"
                             "*dashboard*"))
   :custom
