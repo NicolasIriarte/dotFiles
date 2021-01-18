@@ -1160,10 +1160,11 @@ I use [[https://www.passwordstore.org/][pass]] to manage all of my passwords loc
       (dired target))))
 
 (my/view-def
- ;;  "d"   '(:ignore t :which-key "dired")
- "dd"  '(dired :which-key "Here")
- "dh"  `(,(my/dired-link "~") :which-key "~/")
- "dn"  `(,(my/dired-link in-notes-dir) :which-key "Notes"))
+  ;;  "d"   '(:ignore t :which-key "dired")
+  "dd" '(dired-jump :which-here "Here")
+  "dc" '(dired :which-key "Counsel")
+  "dh" `(,(my/dired-link "~") :which-key "~/")
+  "dn" `(,(my/dired-link in-notes-dir) :which-key "Notes"))
 
 #+end_src
 
@@ -1399,7 +1400,8 @@ files contained within the repo.  More information at the [[https://github.com/a
   (setq lsp-ui-sideline-enable t)
   (setq lsp-ui-sideline-show-hover nil)
   (setq lsp-ui-doc-position 'bottom)
-  (lsp-ui-doc-show))
+  ;; (lsp-ui-doc-show) ;; Gives error, must investigate
+  )
 
 #+end_src
 
@@ -1444,13 +1446,13 @@ Not currently doing any Common Lisp development so these packages are disabled f
 
 #+begin_src emacs-lisp
 
-  (use-package sly
-    :disabled
-    :mode "\\.lisp\\'")
+(use-package sly
+  :disabled
+  :mode "\\.lisp\\'")
 
-  (use-package slime
-    :disabled
-    :mode "\\.lisp\\'")
+(use-package slime
+  :disabled
+  :mode "\\.lisp\\'")
 
 #+end_src
 
@@ -1481,33 +1483,34 @@ Configure TypeScript and JavaScript language modes
 
 #+begin_src emacs-lisp
 
-  (use-package typescript-mode
-    :mode "\\.ts\\'"
-    :config
-    (setq typescript-indent-level 2))
+(use-package typescript-mode
+  :mode "\\.ts\\'"
+  :config
+  (setq typescript-indent-level 4))
 
-  (defun my/set-js-indentation ()
-    (setq js-indent-level 2)
-    (setq-default tab-width 2))
+(defun my/set-js-indentation ()
+  (setq js-indent-level 4)
+  (setq-default tab-width 4))
 
-  (use-package js2-mode
-    :mode "\\.jsx?\\'"
-    :config
-    ;; Use js2-mode for Node scripts
-    (add-to-list 'magic-mode-alist '("#!/usr/bin/env node" . js2-mode))
+(use-package js2-mode
+  :mode "\\.jsx?\\'"
+  :config
+  ;; Use js2-mode for Node scripts
+  (add-to-list 'magic-mode-alist '("#!/usr/bin/env node" . js2-mode))
 
-    ;; Don't use built-in syntax checking
-    (setq js2-mode-show-strict-warnings nil)
+  ;; Don't use built-in syntax checking
+  (setq js2-mode-show-strict-warnings nil)
 
-    ;; Set up proper indentation in JavaScript and JSON files
-    (add-hook 'js2-mode-hook #'my/set-js-indentation)
-    (add-hook 'json-mode-hook #'my/set-js-indentation))
+  ;; Set up proper indentation in JavaScript and JSON files
+  (add-hook 'js2-mode-hook #'my/set-js-indentation)
+  (add-hook 'json-mode-hook #'my/set-js-indentation))
 
-  (use-package prettier-js
-    :hook ((js2-mode . prettier-js-mode)
-           (typescript-mode . prettier-js-mode))
-    :config
-    (setq prettier-js-show-errors nil))
+(use-package prettier-js
+  :disabled
+  :hook ((js2-mode . prettier-js-mode)
+         (typescript-mode . prettier-js-mode))
+  :config
+  (setq prettier-js-show-errors nil))
 
 #+end_src
 
@@ -1939,7 +1942,7 @@ It's nice to have a table of contents section for long literate configuration fi
   (org-journal-enable-encryption nil) ;; Encrypt with tag
   (org-journal-encrypt-journal t) ;; Encrypt whole file
   (org-journal-find-file 'find-file)
-  (org-journal-search-forward-fn 'swiper)
+  (org-journal-search-forward-fn 'search-forward-regexp)
   (org-journal-prefix-key nil)
   :config
   ;; Delete defined key by this package
@@ -1976,7 +1979,9 @@ It's nice to have a table of contents section for long literate configuration fi
   :ensure nil
   :after org
   :config
-  (setq epa-file-encrypt-to '(in-user-mail))
+  ;; Default Mail of gpg key to encrypt Every key has assigned an Email. If a
+  ;; key exists with `in-user-email'. Use it as default.
+  (add-to-list 'epa-file-encrypt-to in-user-mail)
   :custom
   ;; If t, always asks user to select recipients.
   ;; If nil, query user only when ‘epa-file-encrypt-to’ is not set.
