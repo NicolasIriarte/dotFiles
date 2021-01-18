@@ -1095,16 +1095,41 @@ I use [[https://www.passwordstore.org/][pass]] to manage all of my passwords loc
 
 #+begin_src emacs-lisp
 (use-package all-the-icons-dired)
+
+(use-package dired-single
+  :ensure t
+  :defer t
+  :init
+  (defun my/dired-single-init ()
+    "Bunch of stuff to run for dired, either immediately or when it's
+   loaded."
+    ;; <add other stuff here>
+    (define-key dired-mode-map [remap dired-find-file]
+      'dired-single-buffer)
+    (define-key dired-mode-map [remap dired-mouse-find-file-other-window]
+      'dired-single-buffer-mouse)
+    (define-key dired-mode-map [remap dired-up-directory]
+      'dired-single-up-directory))
+
+  ;; if dired's already loaded, then the keymap will be bound
+  (if (boundp 'dired-mode-map)
+      ;; we're good to go; just add our bindings
+      (my/dired-single-init)
+    ;; it's not loaded yet, so add our bindings to the load-hook
+    (add-hook 'dired-load-hook 'my/dired-single-init)))
+
+(use-package dired-hide-dotfiles
+  :after dired
+  :config
+  (define-key dired-mode-map (kbd "h") #'dired-hide-dotfiles-mode)
+  :hook (dired-mode . dired-hide-dotfiles-mode))
+
 (use-package dired
   :ensure nil
   :defer 1
   :commands (dired dired-jump)
   :config
-  (setq dired-listing-switches "-agho --group-directories-first"
-	      dired-omit-files "^\\.[^.].*"
-	      dired-omit-verbose nil)
-
-  (autoload 'dired-omit-mode "dired-x")
+  (setq dired-listing-switches "-agho --group-directories-first")
 
   (add-hook 'dired-load-hook
             (lambda ()
@@ -1114,9 +1139,11 @@ I use [[https://www.passwordstore.org/][pass]] to manage all of my passwords loc
   (add-hook 'dired-mode-hook
             (lambda ()
               (interactive)
-              (dired-omit-mode 1)
+              ;; (dired-omit-mode 1)
               (all-the-icons-dired-mode 1)
-              (hl-line-mode 1)))
+              (hl-line-mode 1)
+              ;; (my/dired-single-init)
+              ))
 
   (use-package dired-rainbow
     :after dired
@@ -1142,15 +1169,14 @@ I use [[https://www.passwordstore.org/][pass]] to manage all of my passwords loc
     (dired-rainbow-define vc "#0074d9" ("git" "gitignore" "gitattributes" "gitmodules"))
     (dired-rainbow-define-chmod executable-unix "#38c172" "-.*x.*"))
 
-  (use-package dired-single
-    :ensure t
-    :defer t)
+  ;; (use-package dired-ranger
+  ;;   :disabled t
+  ;;   :defer t)
 
-  (use-package dired-ranger
-    :defer t)
-
-  (use-package dired-collapse
-    :defer t))
+  ;; (use-package dired-collapse
+  ;;   :disabled t
+  ;;   :defer t)
+  ;; )
 
 (defun my/dired-link (path)
   (lexical-let ((target path))
